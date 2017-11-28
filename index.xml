@@ -2,31 +2,31 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Theory of Machines</title>
-    <link>http://example.org/</link>
+    <link>https://ozkansafak.github.io/</link>
     <description>Recent content on Theory of Machines</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 28 Nov 2017 12:25:25 -0800</lastBuildDate>
     
-	<atom:link href="http://example.org/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://ozkansafak.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Semi-supervised Learning</title>
-      <link>http://example.org/posts/semi-supervised-learning/</link>
+      <link>https://ozkansafak.github.io/posts/semi-supervised-learning/</link>
       <pubDate>Tue, 28 Nov 2017 12:25:25 -0800</pubDate>
       
-      <guid>http://example.org/posts/semi-supervised-learning/</guid>
+      <guid>https://ozkansafak.github.io/posts/semi-supervised-learning/</guid>
       <description>Semi-supervised learning is a class of supervised learning tasks and techniques that also make use of unlabeled data for training – typically a small amount of labeled data with a large amount of unlabeled data.
 The Data - STL-10 In this problem we are given 5,000 labeled images and 100,000 unlabeled images. - Colored 96x96 images - Labeled images belong to one of the 10 classes - The unlabeled 100,000 images contain other classes of images as well as the 10 given classes.</description>
     </item>
     
     <item>
       <title>Collaborative Filtering with tensorflow</title>
-      <link>http://example.org/posts/collaborative-filtering-tensorflow/</link>
+      <link>https://ozkansafak.github.io/posts/collaborative-filtering-tensorflow/</link>
       <pubDate>Wed, 22 Nov 2017 15:49:35 -0800</pubDate>
       
-      <guid>http://example.org/posts/collaborative-filtering-tensorflow/</guid>
+      <guid>https://ozkansafak.github.io/posts/collaborative-filtering-tensorflow/</guid>
       <description>PREDICTION OF MOVIE RATINGS 1. Problem Description We are given a rating matrix $R$ where only some of the entries $R_{ij}$ are provided; otherwise rest of them are missing. The task is to predict the missing entries. As in most Machine Learning problems the assumption here is that there&amp;rsquo;s an underlying stationary pattern as to how users rate the movies.
 By the nature of the problem, $R$ is a sparse matrix, where the sparsity comes not from zero entries but from empty records.</description>
     </item>
