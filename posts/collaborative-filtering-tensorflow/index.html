@@ -1,132 +1,79 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    
-    <title>Theory of Machines  | Collaborative Filtering with tensorflow</title>
-    <meta name="HandheldFriendly" content="True">
-    <meta name="MobileOptimized" content="320">
-
-    <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="generator" content="Hugo 0.31" />
-    
-    
-      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
-    
-
-    <link href='https://ozkansafak.github.io/dist/main.css' rel='stylesheet' type="text/css" />
-    
-      
-    
-
-    
-
-    <meta property="og:title" content="Collaborative Filtering with tensorflow" />
-<meta property="og:description" content="PREDICTION OF MOVIE RATINGS 1. Problem Description We are given a rating matrix $R$ where only some of the entries $R_{ij}$ are provided; otherwise rest of them are missing. The task is to predict the missing entries. As in most Machine Learning problems the assumption here is that there&rsquo;s an underlying stationary pattern as to how users rate the movies.
-By the nature of the problem, $R$ is a sparse matrix, where the sparsity comes not from zero entries but from empty records." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://ozkansafak.github.io/posts/collaborative-filtering-tensorflow/" />
-
-
-
-<meta property="article:published_time" content="2017-11-22T15:49:35-08:00"/>
-
-<meta property="article:modified_time" content="2017-11-22T15:49:35-08:00"/>
-
-
-
-
-
-
-
-
-
-
-
-<meta itemprop="name" content="Collaborative Filtering with tensorflow">
-<meta itemprop="description" content="PREDICTION OF MOVIE RATINGS 1. Problem Description We are given a rating matrix $R$ where only some of the entries $R_{ij}$ are provided; otherwise rest of them are missing. The task is to predict the missing entries. As in most Machine Learning problems the assumption here is that there&rsquo;s an underlying stationary pattern as to how users rate the movies.
-By the nature of the problem, $R$ is a sparse matrix, where the sparsity comes not from zero entries but from empty records.">
-
-
-<meta itemprop="datePublished" content="2017-11-22T15:49:35-08:00" />
-<meta itemprop="dateModified" content="2017-11-22T15:49:35-08:00" />
-<meta itemprop="wordCount" content="1562">
-
-
-
-<meta itemprop="keywords" content="" />
-<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Collaborative Filtering with tensorflow"/>
-<meta name="twitter:description" content="PREDICTION OF MOVIE RATINGS 1. Problem Description We are given a rating matrix $R$ where only some of the entries $R_{ij}$ are provided; otherwise rest of them are missing. The task is to predict the missing entries. As in most Machine Learning problems the assumption here is that there&rsquo;s an underlying stationary pattern as to how users rate the movies.
-By the nature of the problem, $R$ is a sparse matrix, where the sparsity comes not from zero entries but from empty records."/>
-
-  </head>
-
-  <body class="ma0 avenir bg-near-white">
-
-    
-
-  <header>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head>
      <script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} }); 
      </script> 
      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"> 
      </script> 
-    <div class="bg-black">
-      <nav class="pv3 ph3 ph4-ns" role="navigation">
-  <div class="flex-l justify-between items-center center">
-    <a href="https://ozkansafak.github.io/" class="f3 fw2 hover-white no-underline white-90 dib">
-      Theory of Machines
-    </a>
-    <div class="flex-l items-center">
-      
-      
 
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.31" />
 
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
+  <title>Collaborative Filtering with tensorflow &middot; Theory of Machines</title>
 
+  
+  <link rel="stylesheet" href="https://ozkansafak.github.io/css/print.css" media="print">
+  <link rel="stylesheet" href="https://ozkansafak.github.io/css/poole.css">
+  <link rel="stylesheet" href="https://ozkansafak.github.io/css/syntax.css">
+  <link rel="stylesheet" href="https://ozkansafak.github.io/css/hyde.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
 
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
 
+  
+  <link href="" rel="alternate" type="application/rss+xml" title="Theory of Machines" />
+</head>
 
+  <body class=" ">
+       <script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} }); 
+     </script> 
+     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"> 
+     </script> 
 
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="https://ozkansafak.github.io/"><h1>Theory of Machines</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
     </div>
+
+    <ul class="sidebar-nav">
+      <li><a href="https://ozkansafak.github.io/">Home</a> </li>
+      
+    </ul>
+
+    <p>&copy; 2017. All rights reserved. </p>
   </div>
-</nav>
+</div>
 
-    </div>
-  </header>
-
-
-    <main class="pb7" role="main">
-      
-  <div class="flex-l mt2 mw8 center">
-    <article class="center cf pv5 ph3 ph4-ns mw7">
-      <header>
-        <p class="f6 b helvetica tracked">
-          POSTS
-        </p>
-        <h1 class="f1">
-          Collaborative Filtering with tensorflow
-        </h1>
-      </header>
-      <div class="nested-copy-line-height lh-copy f4 nested-links nested-img mid-gray">
-        
-
-<h1 id="prediction-of-movie-ratings">PREDICTION OF MOVIE RATINGS</h1>
+    <div class="content container">
+    <div class="post">
+  <h1>Collaborative Filtering with tensorflow</h1>
+  <span class="post-date">Mon, Nov 20, 2017</span>
+  
 
 <hr />
 
 <h2 id="1-problem-description">1. Problem Description</h2>
 
-<p>We are given a rating matrix $R$ where only some of the entries $R_{ij}$ are provided; otherwise rest of them are missing. The task is to predict the missing entries. As in most Machine Learning problems the assumption here is that there&rsquo;s an underlying stationary pattern as to how users rate the movies.</p>
+<p>We are given a rating matrix $R$ where only a small fraction of the entries $R_{ij}$ are provided; otherwise the rest is missing. The task is to predict those missing entries. As in most Machine Learning problems the assumption here is that there&rsquo;s an underlying stationary pattern as to how users rate the movies.</p>
 
 <p>By the nature of the problem, $R$ is a sparse matrix, where the sparsity comes not from zero entries but from empty records. Therefor, we represent the training data in 3 columns: $i$: user ID , $j$: movie ID and $R_{ij}$: the rating .</p>
 
 <table>
 <thead>
 <tr>
-<th align="center">$i$</th>
-<th align="center">$j$</th>
-<th align="center">$R_{ij}$</th>
+<th align="center">$i$: user ID</th>
+<th align="center">$j$: movie ID</th>
+<th align="center">$R_{ij}$: the rating</th>
 </tr>
 </thead>
 
@@ -215,7 +162,7 @@ By the nature of the problem, $R$ is a sparse matrix, where the sparsity comes n
 
 <h2 id="2-collaborative-filtering-model">2. Collaborative Filtering Model</h2>
 
-<p>The terms <em>Collaborative Filtering</em>, <em>Matrix Factorization</em> and <em>Low-Rank Matrix Factorization</em> all refer to the same recommender system model. In essence, this model is based on the assumption that users who liked the same movies are likely to feel similarly towards other movies. The term <em>collaborative</em> refers to the observation that when a large set of users are involved in rating the movies, these users are effectively collaborating to get better movie ratings for everyone because every new rating will help the algorithm learn better features for the <em>users-movies</em> system. Later, these features are used by the model to make better rating predictions for everyone else.</p>
+<p>The terms <em>Collaborative Filtering</em>, <em>Matrix Factorization</em> and <em>Low-Rank Matrix Factorization</em> all refer to the same recommender system model. In essence, this model is based on the assumption that users who liked the same movies are likely to feel similarly towards other movies. The term <em>collaborative</em> refers to the observation that when a large set of users are involved in rating the movies, these users are effectively collaborating to get better movie ratings for everyone because every new rating will help the algorithm learn better features for the <em>users-movies</em> system. Later, these features are used by the model to make better rating predictions for everyone.</p>
 
 <p>The Collaborative Filtering Model can also be described as reconstructing a <strong>low rank approximation</strong> of matrix $R$ via its <strong>Singular Value Decomposition</strong> $R = U \cdot \Sigma \cdot V^T$. The low-rank reconstruction is achieved by only retaining the largest $k$ singular values, $R_k=U \cdot \Sigma_k \cdot V^T$.</p>
 
@@ -272,6 +219,11 @@ $V$: movies feature matrix</p>
 <ul>
 <li>ratings were given at intervals of 0.5: {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0}</li>
 </ul>
+
+<p><img src="/fig1.png" alt="fig1" height="500" width="40" />
+<img src="/fig2.png" alt="fig2" height="500" width="40" />
+<img src="/fig3.png" alt="fig3" height="500" width="40" />
+<img src="/fig4.png" alt="fig4" height="500" width="40" /></p>
 
 <hr />
 
@@ -375,63 +327,11 @@ R_pred = tf.sigmoid(R_pred) * 5
 <li>The regularization term needs to take into account the average rating for each user $u_i$, $\mu_{u_i}$.</li>
 </ol>
 
-      </div>
-    </article>
-    <aside class="ph3 mt2 mt6-ns">
-      
+</div>
 
 
+    </div>
 
-
-
-
-
-  <div class="bg-light-gray pa3">
-    <ul>
-      <li class="list b mb3">
-        1 More Posts
-      </li>
-      
-        <li class="list f5 w-100 hover-bg-white nl1">
-          
-          <a href="/posts/semi-supervised-learning/" class="link ph2 pv2 db black">
-            Semi-supervised Learning
-          </a>
-        </li>
-      
-        <li class="list f5 w-100 hover-bg-white nl1">
-          
-          <a href="/posts/collaborative-filtering-tensorflow/" class="link ph2 pv2 db black o-50">
-            Collaborative Filtering with tensorflow
-          </a>
-        </li>
-      
-    </ul>
-  </div>
-
-
-    </aside>
-  </div>
-
-    </main>
-    <footer class="bg-near-black bottom-0 w-100 pa3" role="contentinfo">
-  <div class="flex justify-between">
-  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://ozkansafak.github.io/" >
-    &copy; 2017 Theory of Machines
-  </a>
-  
-
-
-
-
-
-
-
-
-  </div>
-</footer>
-
-    <script src="https://ozkansafak.github.io/dist/app.bundle.js" async></script>
-
+    
   </body>
 </html>
