@@ -64,8 +64,6 @@
 
 <!-- ><p style="color:#cf494f">  $r_{ij}$   </p> -->
 
-<p>yo</p>
-
 <h2 id="1-problem-description">1. Problem Description</h2>
 
 <p>We are given a rating matrix $R$ where only a small fraction of the entries $R_{ij}$ are provided; otherwise the rest is missing. The task is to predict those missing entries. As in most Machine Learning problems the assumption here is that there&rsquo;s an underlying stationary pattern as to how users rate the movies.</p>
@@ -212,34 +210,43 @@ $V$: movies feature matrix</p>
 &emsp;&emsp;&emsp; 2. how much that feature is favored by the user.</em></p>
 </blockquote>
 
-<hr />
+<h2 id="3-practical-methodology">3. Practical Methodology</h2>
 
-<h2 id="3-movielens-20m-data">3. MovieLens 20M data</h2>
+<h5 id="movielens-20m-dataset">MovieLens 20M dataset</h5>
 
 <ul>
-<li>The collaborative filtering model is used to predict ratings of the <a href="https://grouplens.org/datasets/movielens/20m/">MovieLens dataset</a>.</li>
-<li>ml-20m data set consists of 20000263 ratings from 138493 users on 27278 movies.</li>
+<li><a href="https://grouplens.org/datasets/movielens/20m/">MovieLens dataset</a> data set consists of 20,000,263 ratings from 138,493 users on 27,278 movies.</li>
 <li>All ratings are given at intervals of 0.5:<br />
 {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0}</li>
+<li>Shuffling the data before splitting it into training, CV and test sets was crucial.</li>
+<li>Splitting the Input Data:
+
+<ul>
+<li>Training Data takes up 64% of the input data,</li>
+<li>CV Data 16% and</li>
+<li>Test Data 20%.</li>
+</ul></li>
+<li>We abstain from imposing a <strong>bias term</strong> by enforcing an extra component set to constant $1$ in $U$ and $V$, since the embeddings are free to learn biases if necessary.</li>
+<li>Since no particular bounds are imposed on the entries in the embedding vectors $u_{i}$ and $v_{j}$. The model is free to learn positive or negative real numbers.<br /></li>
 </ul>
 
 <p><div style="width:700 px">
-    <div style="float:left; width:300">
-        <img src="/fig1.png" alt="fig1" width="300" />
+    <div style="float:left; width:360">
+        <img src="/fig1.png" alt="fig1" width="360" />
     </div>
     <div style="float:left; width:300">
-        <img src="/fig2.png" alt="fig2" width="300" />
+        <img src="/fig2.png" alt="fig2" width="360" />
     </div>
     <div style="float:left; width:300">
-        <img src="/fig3.png" alt="fig3" width="300" />
+        <img src="/fig3.png" alt="fig3" width="360" />
     </div>
     <div style="float:left; width:300">
-        <img src="/fig4.png" alt="fig4" width="300" />
+        <img src="/fig4.png" alt="fig4" width="360" />
     </div>
     <div style="clear:both"></div>
 </div>
 <br>
-<font size="+1"><b><p align="center">Figure 2. Histogram of <em>(a)</em> all ratings (<em>b</em>) user mean ratings (<em>c</em>) movie mean ratings, and (<em>d</em>)
+<font size="+1"><b><p align="center">Figure 2. Histogram of (<em>a</em>) all ratings (<em>b</em>) user mean ratings (<em>c</em>) movie mean ratings, and (<em>d</em>)
     number of ratings provided by users. Minimum number of ratings provided by a user is 20, and maximum is 9254 ratings.
 </p></b></font></p>
 
@@ -281,23 +288,6 @@ v_mean = tf.placeholder(dtype=tf.float32, shape=(BATCH_SIZE,1))
 </code></pre>
 
 <hr />
-
-<h2 id="5-practical-methodology">5. Practical Methodology</h2>
-
-<ul>
-<li>Shuffling the data before splitting it into train, CV and test sets was crucial.</li>
-<li>Explicitly  Defining Biases is not Necessary<br />
-We abstain from imposing <strong>biases</strong> by enforcing an extra component in $U$ and $V$ that&rsquo;s set to constant 1, since the embeddings are free to learn biases if necessary.<br /></li>
-<li>Since no particular bounds are imposed on the entries in the embedding vectors $u_{i}$ and $v_{j}$. The model is free to learn positive or negative real numbers.<br /></li>
-</ul>
-
-<h5 id="splitting-the-input-data">Splitting the Input Data:</h5>
-
-<ul>
-<li>Training Data takes up 64% of the input data,</li>
-<li>CV Data 16% and</li>
-<li>Test Data 20%.</li>
-</ul>
 
 <h2 id="7-linear-vs-non-linear-features">7. Linear vs Non-linear features</h2>
 
