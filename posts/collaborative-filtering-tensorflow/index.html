@@ -70,7 +70,7 @@
 
 <p>By the nature of the problem, $R$ is a sparse matrix, where the sparsity comes not from zero entries but from empty records. Therefor, we represent the training data in 3 columns: $i$: user ID , $j$: movie ID and $R_{ij}$: the rating (see Table 1).</p>
 
-<p><font size="+1"><strong><p align="center">Table 1. Ratings data in sparse format</p></strong></font></p>
+<p><font size="+1"><strong><p align="center">Table 1. Ratings data ml-20m sparse format</p></strong></font></p>
 
 <table>
 <thead>
@@ -172,8 +172,8 @@
 
 <p><strong>Eckart-Young Theorem</strong> states that if $R_k$ is the best rank-$k$ approximation of $R$, then it&rsquo;s necessary that:</p>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   1. $R_k$ minimizes the Frobenius norm $||R-R_k||_F^2$, and<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   2. $R_k$ can be constructed by retaining only the largest $k$ singular values in the SVD formulation $R_k=U \cdot \Sigma_k \cdot V^T$.</p>
+<p>&emsp;&emsp;&emsp;   1. $R_k$ minimizes the Frobenius norm $||R-R_k||_F^2$ and<br />
+&emsp;&emsp;&emsp;   2. $R_k$ can be constructed by retaining only the largest $k$ singular values in $\Sigma_k$ of the SVD formulation.</p>
 
 <p>We can further absorb the diagonal matrix $\Sigma_k$ into $U$ and $V$ and express the factorization as a simple dot product between the feature matrices for users and movies.</p>
 
@@ -191,7 +191,7 @@ $V$: movies feature matrix</p>
 
 <p>Hence, we formulate the problem as an <strong>optimization problem</strong> and search for $U$ and $V$ by minimizing the following loss function $L$.</p>
 
-<p align="center">$argmin_{\ U,V}\ L = ||R - U \cdot V^T||_F^2$.</p>
+<p>$$argmin_{\ U,V}\ L = ||R - U \cdot V^T||_F^2$$</p>
 
 <blockquote>
 <p><em>An important point to make is that the Frobenius norm is computed only as a partial summation over the entries in $R$ where a rating is provided.</em></p>
@@ -246,7 +246,7 @@ $V$: movies feature matrix</p>
     <div style="clear:both"></div>
 </div>
 <br>
-<font size="+1"><b><p align="center">Figure 2. Histogram of (<em>a</em>) all ratings (<em>b</em>) user mean ratings (<em>c</em>) movie mean ratings, and (<em>d</em>)
+<font size="+1"><b><p align="center">Figure 2. Histogram of (<em>a</em>) all ratings in ml-20m data (<em>b</em>) mean of ratings per user (<em>c</em>) mean of ratings per movie, and (<em>d</em>)
     number of ratings provided by users. Minimum number of ratings provided by a user is 20, and maximum is 9254 ratings.
 </p></b></font></p>
 
@@ -255,83 +255,76 @@ $V$: movies feature matrix</p>
 <h2 id="4-challenges-in-developing-the-model-on-tensorflow">4. Challenges in Developing the Model on <code>tensorflow</code></h2>
 
 <ul>
-<li>A particular challenge in implementing a Matrix Factorization algorithm on <code>tensorflow</code> is that we can&rsquo;t naively pass <code>None</code> for the <code>shape</code> argument while declaring the input data tensors <code>R</code> and <code>R_indices</code> as in <code>R = tf.placeholder(..., shape=(None))</code>. Since every rating <code>R[i,j]</code> is a function of only $2*k$ tunable variables. The <code>shape</code> parameter corresponds to how many ratings will make up a single batch in the SGD routine. To make the SGD work, I had to fix the <code>shape</code> of the <code>tf.placeholder</code> <code>R</code> and <code>R_indices</code>  to <code>shape=(BATCH_SIZE, k)</code> instead of <code>shape=(None, k)</code>. This a small price to pay that allows me to use GPU computation and also backprop with symbolic differentiation, which gave me the flexibility to experiment in trying additional non-linear terms in the loss function without having the worry about the partial differentials with respect to the tunable variables.<br /></li>
-</ul>
+<li><p>A particular challenge in implementing a Matrix Factorization algorithm on <code>tensorflow</code> is that we can&rsquo;t naively pass <code>None</code> for the <code>shape</code> argument while declaring the input data tensors <code>R</code> and <code>R_indices</code> as in <code>R = tf.placeholder(..., shape=(None))</code>.  The <code>shape</code> parameter corresponds to the number of ratings a single batch in the SGD step contains. To make the SGD work, I had to fix the <code>shape</code> of the <code>tf.placeholder</code> variables <code>R</code> and <code>R_indices</code>  to <code>shape=(BATCH_SIZE, k)</code> instead of <code>shape=(None, k)</code>.  This is a small price to pay that allows me to use <code>tensorflow</code> which provides me GPU computation and also backprop with symbolic differentiation. This gave me the flexibility to experiment with additional nonlinear terms in loss function without having the worry about the partial differentials with respect to the tunable variables.</p>
 
 <pre><code class="language-python">R = tf.placeholder(dtype=tf.float32, shape=(BATCH_SIZE,))
 R_indices = tf.placeholder(dtype=tf.int32, shape=(BATCH_SIZE,2))
 u_mean = tf.placeholder(dtype=tf.float32, shape=(BATCH_SIZE,1)) 
 v_mean = tf.placeholder(dtype=tf.float32, shape=(BATCH_SIZE,1)) 
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>At each iteration of the SGD algorithm a mini-batch of rating data $R_{ij}$ and the corresponding user and movie index pair $(i,j)$, will be fed into the computational graph. Since each $R_{ij}$ is represented as the dot product $u_i \cdot v_j^T$ by our model, this will require us to create a stack of the corresponding embedding vectors, a <code>U_stack</code> and a <code>V_stack</code> where <code>U_stack.getshape() == (BATCH_SIZE,k)</code> and <code>V_stack.getshape() == (BATCH_SIZE,k)</code>.</li>
-</ul>
-
-<p>The implementation on <code>tensorflow</code> is a little trickier than in <code>numpy</code>, and it&rsquo;s implemented in the following <code>get_stacked_UV</code> module:</p>
+<li><p>At each SGD step a mini-batch of rating data $R_{ij}$ and the corresponding user-movie index pairs $(i,j)$ are fed into the computational graph. Since each $R_{ij}$ is represented as the dot product $u_i \cdot v_j^T$, we have to stack the corresponding embedding vectors into 2-D tensors <code>U_stack</code> and <code>V_stack</code> where both <code>U_stack.getshape()</code> and <code>V_stack.getshape()</code> equal to <code>(BATCH_SIZE,k)</code>.<br />
+The implementation of stacking tensors <code>tensorflow</code> is a little trickier than in <code>numpy</code>, and it&rsquo;s implemented in the following <code>get_stacked_UV</code> module:</p>
 
 <pre><code class="language-python">def get_stacked_UV(R_indices, R, U, V, k, BATCH_SIZE):
-    u_idx = R_indices[:,0]
-    v_idx = R_indices[:,1]
-    rows_U = tf.transpose(np.ones((k,1), dtype=np.int32)*u_idx)
-    rows_V = tf.transpose(np.ones((k,1), dtype=np.int32)*v_idx)
-    cols = np.arange(k, dtype=np.int32).reshape((1,-1))
-    cols = tf.tile(cols, [BATCH_SIZE,1])
+u_idx = R_indices[:,0]
+v_idx = R_indices[:,1]
+rows_U = tf.transpose(np.ones((k,1), dtype=np.int32)*u_idx)
+rows_V = tf.transpose(np.ones((k,1), dtype=np.int32)*v_idx)
+cols = np.arange(k, dtype=np.int32).reshape((1,-1))
+cols = tf.tile(cols, [BATCH_SIZE,1])
 
-    indices_U = tf.stack([rows_U, cols], -1)
-    indices_V = tf.stack([rows_V, cols], -1)
+indices_U = tf.stack([rows_U, cols], -1)
+indices_V = tf.stack([rows_V, cols], -1)
 
-    stacked_U = tf.gather_nd(U, indices_U)
-    stacked_V = tf.gather_nd(V, indices_V)
+stacked_U = tf.gather_nd(U, indices_U)
+stacked_V = tf.gather_nd(V, indices_V)
     
-    return stacked_U, stacked_V
-</code></pre>
+return stacked_U, stacked_V
+</code></pre></li>
+</ul>
 
 <hr />
 
-<h2 id="7-linear-vs-non-linear-features">7. Linear vs Non-linear features</h2>
+<h2 id="5-linear-and-nonlinear-features">5. Linear and Nonlinear Features</h2>
 
 <ul>
-<li><code>R_pred = tf.sigmoid(R_pred) * 5</code> dropped the <code>MAE_test</code> approximately from <code>.64</code> to <code>.62</code>. Firstly, I can&rsquo;t explain why sigmoid works better&ndash;although only by a tiny bit.</li>
-<li>However, adding squared dot product term along with the linear dot product, didn&rsquo;t produce any tangible improvement.</li>
-</ul>
-
-<pre><code class="language-python">u_cdot_v_square = tf.square(tf.multiply(sliced_U, sliced_V)) 
+<li><code>R_pred = tf.sigmoid(R_pred) * 5</code> dropped the <code>MAE_test</code> approximately from <code>.64</code> to <code>.62</code>. The reason for it is that the error rate, in the absence of sigmoid activation, some prediction can get bigger than 5 and some smaller than 0. Sigmoid brings them closer to the actual<br /></li>
+<li>However, adding squared dot product term along with the linear dot product, didn&rsquo;t produce any tangible improvement and was discarded from the final model.
+<code>python 
+u_cdot_v_square = tf.square(tf.multiply(U_stack_, V_stack)) 
 nl = tf.reduce_sum(u_cdot_v_square, axis=1)
 R_pred = R_pred + alpha*nl
 R_pred = tf.sigmoid(R_pred) * 5
-</code></pre>
+</code></li>
+</ul>
 
-<h2 id="8-linear-features">8. Linear Features:</h2>
+<h2 id="6-nonlinear-cross-features">6. Nonlinear Cross-Features:</h2>
 
-<p>Matrix factorization is based on a low-rank singular value decomposition (SVD).</p>
+<ul>
+<li>In the linear collaborative filtering model, $$R_{ij} = U_{i} \cdot V_{j}^T$$ $p^{th}$ feature of $U_{i}$ is multiplied with the corresponding $p^{th}$ feature of $V_{j}$.</li>
+</ul>
 
-<p>$$R=U \cdot V^{T}$$</p>
+<p>$$=&gt; Linear\ Model: MAE (CV) = 0.6237$$</p>
 
-<p>An individual rating of user $i$ on movie $j$ is given by</p>
-
-<p>$$r_{ij} = u_{i} \cdot v_{j}^T$$</p>
-
-<p>Here, each user feature vector $u_i$ and movie feature vector $v_j$ is of length $k$. and the classical matrix factorization multiplies $p^{th}$ feature of $u_{i}$ with  $p^{th}$ feature of $v_{j}$. Here, one can assume the feature $p$ corresponds to how much of a specific genre is present in movie $j$ and how much a user $i$ likes that specific genre. When the rating $y_{ij}$ is modeled by a dot product between $u_i$ and $v_j$.</p>
-
-<p>&emsp;&emsp;&emsp;&emsp;&emsp;<strong>=&gt; Linear Model: MAE (CV) = 0.6237</strong></p>
-
-<h2 id="9-nonlinear-cross-features">9. Nonlinear Cross-Features:</h2>
-
-<p>The rating prediction with cross-features</p>
+<ul>
+<li>The rating prediction with cross-features:</li>
+</ul>
 
 <p>$$r_{ij} = u_{i} \cdot v_{j}^{T} + \sum_{p=0}^{k}\sum_{q=0}^{k} w_{pq} (u_{ip} \cdot v_{jq}^{T})$$</p>
 
-<p>Here, we&rsquo;re multiplying $p^{th}$ feature of user $i$ with $q^{th}$ feature of movie $j$. This allows the model to learn cross interactions as, say, if a user likes the actor Tom Cruise (the $p^{th}$ feature&ndash;high  value for $u_{ip}$), and she doesn&rsquo;t like dark and suspenseful thrillers ($q^{th}$ feature&ndash;low value for $u_{iq}$), however, she likes the movie Eyes Wide Shut (even though it has a high value for $v_{jq}$), because an underlying reason that makes her not like dark suspenseful movies perhaps disappears if Tom Cruise is in the movie. For a model to capture such a pattern, it has to allow some sort of <strong>nonlinear interactions</strong> between feature $p$ and feature $q$.</p>
+<ul>
+<li>Here, $p^{th}$ feature of user $i$ is getting multiplied with $q^{th}$ feature of movie $j$. This allows the model to learn cross interactions as, for instance, if a user likes the actor Tom Cruise (the $p^{th}$ feature&ndash;high  value for $u_{ip}$), and she doesn&rsquo;t like dark and suspenseful thrillers ($q^{th}$ feature&ndash;low value for $u_{iq}$), however, she likes the movie Eyes Wide Shut (even though it has a high value for $v_{jq}$), because an underlying reason that makes her not like dark suspenseful movies perhaps disappears if Tom Cruise is in the movie. For a model to capture such a pattern, it has to allow some sort of <strong>nonlinear cross interactions</strong> between features $p$ and $q$.<br /></li>
+</ul>
 
-<p>&emsp;&emsp;&emsp;&emsp;&emsp;<strong>=&gt; Non-linear Model: MAE (CV) = 0.6150</strong></p>
+<p>$$=&gt; Nonlinear\ Model: MAE (CV) = 0.6150$$</p>
 
 <pre><code>R_pred = np.dot(U,V) + alpha1*(xft) + alpha2*(uv_sq)
 </code></pre>
 
 <p>The runtime for one epoch went from $31$ sec for linear model to $60$ sec when considering all 3 types of nonlinear feature crossings ($u_{ip}$ ~ $v_{jq}$), ($u_{ip}$ ~ $u_{iq}$), ($v_{jp}$ ~ $v_{jq}$)</p>
 
-<h2 id="10-improvements-on-the-algorithm">10. Improvements on the Algorithm</h2>
+<h2 id="8-improvements-on-the-algorithm">8. Improvements on the Algorithm</h2>
 
 <ol>
 <li>The regularization term needs to take into account the average rating for each user $u_i$, $\mu_{u_i}$.</li>
