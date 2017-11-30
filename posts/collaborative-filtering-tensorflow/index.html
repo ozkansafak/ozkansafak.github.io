@@ -13,7 +13,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
-  <title>Collaborative Filtering with tensorflow &middot; Theory of Machines</title>
+  <title>A Collaborative Filtering Model on tensorflow with Nonlinear Cross Features &middot; Theory of Machines</title>
 
   
   <link rel="stylesheet" href="https://ozkansafak.github.io/css/print.css" media="print">
@@ -56,7 +56,7 @@
 
     <div class="content container">
     <div class="post">
-  <h1>Collaborative Filtering with tensorflow</h1>
+  <h1>A Collaborative Filtering Model on tensorflow with Nonlinear Cross Features</h1>
   <span class="post-date">Sat, Nov 18, 2017</span>
   
 
@@ -289,42 +289,37 @@ return stacked_U, stacked_V
 <h2 id="5-linear-and-nonlinear-features">5. Linear and Nonlinear Features</h2>
 
 <ul>
-<li><code>R_pred = tf.sigmoid(R_pred) * 5</code> dropped the <code>MAE_test</code> approximately from <code>.64</code> to <code>.62</code>. The reason for it is that the error rate, in the absence of sigmoid activation, some prediction can get bigger than 5 and some smaller than 0. Sigmoid brings them closer to the actual<br /></li>
-<li>However, adding squared dot product term along with the linear dot product, didn&rsquo;t produce any tangible improvement and was discarded from the final model.
-<code>python 
-u_cdot_v_square = tf.square(tf.multiply(U_stack_, V_stack)) 
+<li><p><code>R_pred = tf.sigmoid(R_pred) * 5</code> dropped the <code>MAE_test</code> approximately from <code>.64</code> to <code>.62</code>. The reason for it is that the error rate, in the absence of sigmoid activation, some predictions can get bigger than 5 and some smaller than 0. Sigmoid activation brings the predictions closer to their actual values.</p></li>
+
+<li><p>However, adding squared dot product term along with the linear dot product, didn&rsquo;t produce any tangible improvement and was discarded from the final model.</p>
+
+<pre><code class="language-python">u_cdot_v_square = tf.square(tf.multiply(U_stack_, V_stack)) 
 nl = tf.reduce_sum(u_cdot_v_square, axis=1)
 R_pred = R_pred + alpha*nl
 R_pred = tf.sigmoid(R_pred) * 5
-</code></li>
+</code></pre></li>
 </ul>
 
-<h2 id="6-nonlinear-cross-features">6. Nonlinear Cross-Features:</h2>
+<h2 id="6-cross-features">6. Cross Features:</h2>
 
 <ul>
-<li>In the linear collaborative filtering model, $$R_{ij} = U_{i} \cdot V_{j}^T$$ $p^{th}$ feature of $U_{i}$ is multiplied with the corresponding $p^{th}$ feature of $V_{j}$.</li>
-</ul>
+<li><p>In the linear collaborative filtering model, $$R_{ij} = U_{i} \cdot V_{j}^T$$ $p^{th}$ feature of $U_{i}$ is multiplied with the corresponding $p^{th}$ feature of $V_{j}$.<br />
+$$=&gt; Linear\ Model: MAE (CV) = 0.6237$$</p></li>
 
-<p>$$=&gt; Linear\ Model: MAE (CV) = 0.6237$$</p>
+<li><p>The rating prediction with cross-features:
+$$r_{ij} = u_{i} \cdot v_{j}^{T} + \sum_{p=0}^{k}\sum_{q=0}^{k} w_{pq} (u_{ip} \cdot v_{jq}^{T})$$</p></li>
 
-<ul>
-<li>The rating prediction with cross-features:</li>
-</ul>
-
-<p>$$r_{ij} = u_{i} \cdot v_{j}^{T} + \sum_{p=0}^{k}\sum_{q=0}^{k} w_{pq} (u_{ip} \cdot v_{jq}^{T})$$</p>
-
-<ul>
-<li>Here, $p^{th}$ feature of user $i$ is getting multiplied with $q^{th}$ feature of movie $j$. This allows the model to learn cross interactions as, for instance, if a user likes the actor Tom Cruise (the $p^{th}$ feature&ndash;high  value for $u_{ip}$), and she doesn&rsquo;t like dark and suspenseful thrillers ($q^{th}$ feature&ndash;low value for $u_{iq}$), however, she likes the movie Eyes Wide Shut (even though it has a high value for $v_{jq}$), because an underlying reason that makes her not like dark suspenseful movies perhaps disappears if Tom Cruise is in the movie. For a model to capture such a pattern, it has to allow some sort of <strong>nonlinear cross interactions</strong> between features $p$ and $q$.<br /></li>
-</ul>
-
-<p>$$=&gt; Nonlinear\ Model: MAE (CV) = 0.6150$$</p>
+<li><p>Here, $p^{th}$ feature of user $i$ is getting multiplied with $q^{th}$ feature of movie $j$. This allows the model to learn cross interactions as, for instance, if a user likes the actor Tom Cruise (the $p^{th}$ feature&ndash;high  value for $u_{ip}$), and she doesn&rsquo;t like dark and suspenseful thrillers ($q^{th}$ feature&ndash;low value for $u_{iq}$), however, she likes the movie Eyes Wide Shut (even though it has a high value for $v_{jq}$), because an underlying reason that makes her not like dark suspenseful movies perhaps disappears if Tom Cruise is in the movie. For a model to capture such a pattern, it has to allow some sort of <strong>nonlinear cross interactions</strong> between features $p$ and $q$.<br />
+$$=&gt; Nonlinear\ Model: MAE (CV) = 0.6150$$</p>
 
 <pre><code>R_pred = np.dot(U,V) + alpha1*(xft) + alpha2*(uv_sq)
-</code></pre>
+</code></pre></li>
 
-<p>The runtime for one epoch went from $31$ sec for linear model to $60$ sec when considering all 3 types of nonlinear feature crossings ($u_{ip}$ ~ $v_{jq}$), ($u_{ip}$ ~ $u_{iq}$), ($v_{jp}$ ~ $v_{jq}$)</p>
+<li><p>The computational price paid for a mere 1% increas in mae rate is that the runtime for one epoch went from $31$ sec for pure linear model to $60$ sec when incorporating all 3 types of nonlinear feature crossings:<br />
+<p align="center">($u_{ip}$ ~ $v_{jq}$),&nbsp; ($u_{ip}$ ~ $u_{iq}$),&nbsp; ($v_{jp}$ ~ $v_{jq}$)</p></p></li>
+</ul>
 
-<h2 id="8-improvements-on-the-algorithm">8. Improvements on the Algorithm</h2>
+<h2 id="7-improvements-on-the-algorithm">7. Improvements on the Algorithm</h2>
 
 <ol>
 <li>The regularization term needs to take into account the average rating for each user $u_i$, $\mu_{u_i}$.</li>

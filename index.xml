@@ -22,7 +22,7 @@ The Data - STL-10 In this problem we are given 5,000 labeled images and 100,000 
     </item>
     
     <item>
-      <title>Collaborative Filtering with tensorflow</title>
+      <title>A Collaborative Filtering Model on tensorflow with Nonlinear Cross Features</title>
       <link>https://ozkansafak.github.io/posts/collaborative-filtering-tensorflow/</link>
       <pubDate>Sat, 18 Nov 2017 15:49:35 -0800</pubDate>
       
