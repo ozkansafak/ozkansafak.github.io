@@ -41,7 +41,7 @@
     <div class="sidebar-about">
       <a href="https://ozkansafak.github.io/"><h1>Theory of Machines</h1></a>
       <p class="lead">
-      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+       Safak Ozkan's Blog 
       </p>
     </div>
 
@@ -184,47 +184,39 @@ $k$: rank hyperparameter that we impose (typically $k=10$).<br />
 $U$: user feature matrix<br />
 $V$: movies feature matrix</p>
 
-<p><img src="/Drawing.png" alt="Drawing" width="1000" />
-<font size="+1"><strong><p align="center">Figure 1. A conceptual sketch of the Ratings data matrix $R$ decomposed into its factors: user feature matrix, $U$, and movie feature matrix, $V$. Dots in the figure, $\cdot$, illustrate given values; and question marks, $?$, the missing values. Each entry $R_{ij}$ is expressed as a dot product of the user and movie embedding vectors $U_i$ and $V_j$, respectively.</strong></font></p>
-
-<p>Hence, we formulate the problem as an <strong>optimization problem</strong> and search for $U$ and $V$ by minimizing the following loss function $L$.</p>
+<p>Hence, we can formulate the problem as an <strong>optimization problem</strong> and search for all the entries in $U$ and $V$ by minimizing the following loss function $L$ via SGD.</p>
 
 <p>$$argmin_{\ U,V}\ L = ||R - U \cdot V^T||_F^2$$</p>
 
-<blockquote>
-<p><em>It&rsquo;s important to note that the Frobenius norm is computed only as a partial summation over the entries in $R$ where a rating is provided.</em></p>
-</blockquote>
+<p>It&rsquo;s important to note that the Frobenius norm is computed only as a <strong>partial summation</strong> over the entries in $R$ where a rating is provided&mdash;or equivalently over the list of ratings as shown in Table 1. The optimization procedure searches for the values of all entries in $U$ and $V$. There are $(m+n) \times k$ many tunable variables.</p>
 
-<p>The optimization procedure searches for the values of all entries in $U$ and $V$. There are $(m+n) \times k$ many tunable variables.</p>
+<p>The hyperparameter $k$ is to be chosen carefully by cross-validation. Too small a $k$ value would not be enough to explain the pattern in the data adequately (<em>underfitting</em>), and too large a $k$ value would result in a model fitting on the random noise over the pattern (<em>overfitting</em>).</p>
 
-<p>The hyperparameter $k$ is to be chosen carefully by cross-validation. A small $k$ would not be enough to explain the pattern in the data adequately (<em>underfitting</em>), and too large a $k$ value would result in a model fitting on the random noise over the pattern (<em>overfitting</em>).</p>
+<p>It&rsquo;s worth making a brief interpretation of the feature matrices $U$ and $V$. In the $k$-rank approximation scheme, each rating $R_{ij}$ is expressed as the dot product $U_i^\ \cdot V_j^T$ as shown in Figure 1. The goal of our optimization routine is for the model to learn a <strong>latent feature vector</strong> (or alternatively an <strong>embedding vector</strong>) for each user and movie.  The term latent implies that the features are not explicitly defined as a part of the model nor they can be interpreted definitively once the embeddings are learned. Each entry in $U_i$ and $V_j$ corresponds to the weight coefficient of an abstract feature. These features can specify the genre of the movie or how much action or drama contained in the movie or any other distinguishing quality that would help characterize how the users rate movies. Hence, the dot product representation of the ratings $R_{ij} = U_i^\ \cdot V_j^T$ expresses a <strong>linear combination</strong> of</p>
 
-<blockquote>
-<p><em>It&rsquo;s worth making a brief interpretation of the feature matrices $U$ and $V$. In the $k$-rank approximation scheme, each rating $R_{ij}$ is expressed by the dot product $U_i \cdot V_j^T$ (see Figure 1). The goal of our optimization routine is for the model to learn a</em> <strong><em>latent feature representation</em></strong> <em>(or alternatively an</em> <strong><em>embedding vector</em></strong>) <em>for each user and movie.</em><br />
-<br />
-<em>The term</em> <strong><em>latent</em></strong> <em>implies that the features are not explicitly defined by us nor they&rsquo;re definitively interpretable once the embeddings are learned by the model. Each entry in the embedding vectors $U_i$ and $V_j$ corresponds to the weight coefficient of an abstract feature. These features can specify the movie genre,  how action-filled or dramatic or any other distinguishing quality that would help characterize how the users rate movies. Hence, the dot product representation of the ratings $R_{ij} = U_i \cdot V_j^T$ points to a</em> <strong><em>linear combination</em></strong> <em>of<br />
-<br />
-&emsp;&emsp;&emsp; 1. how much that feature is contained in the movie, and<br />
-&emsp;&emsp;&emsp; 2. how much that feature is favored by the user.</em></p>
-</blockquote>
+<p>&emsp;&emsp;&emsp; 1. how much that feature is contained in the movie-$j$, and<br />
+&emsp;&emsp;&emsp; 2. how much that feature is favored by the user-$i$.</p>
 
-<h2 id="3-practical-methodology">3. Practical Methodology</h2>
+<p><img src="/Drawing.png" alt="Drawing" width="1000" />
+<font size="+1"><p align="center"><b>Figure 1. A conceptual sketch of the Ratings data matrix $R$ decomposed into its factors: user feature matrix, $U$, and movie feature matrix, $V$. Dots in the figure &ldquo;$\cdot$&rdquo; illustrate given values; and question marks &ldquo;$?$&rdquo; the missing values. Each entry $R_{ij}$ is expressed as a dot product of the user and movie embedding vectors $U_i$ and $V_j$, respectively.</b></p></font></p>
 
-<h5 id="movielens-20m-dataset">MovieLens 20M dataset</h5>
+<hr />
+
+<h2 id="3-movielens-20m-dataset">3. MovieLens 20M dataset</h2>
 
 <ul>
-<li><a href="https://grouplens.org/datasets/movielens/20m/">MovieLens dataset</a> data set consists of 20,000,263 ratings from 138,493 users on 27,278 movies.</li>
+<li><a href="https://grouplens.org/datasets/movielens/20m/">MovieLens dataset</a> data set consists of 20,000,263 ratings from 138,493 users on 27,278 movies. Ratings are provided for only $0.5\%$ of all possible entries in $R$.</li>
 <li>All ratings are given at intervals of 0.5:<br />
-{0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0}</li>
-<li>Shuffling the data before splitting it into training, CV and test sets was crucial.</li>
-<li>Splitting the Input Data:
+{0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0}</li>
+<li>Since the input data was ordered according to user IDs, it was crucial to shuffle the data before splitting it into training, CV and test sets.</li>
+<li>The Input Data is split accordingly:
 
 <ul>
-<li>Training Data takes up 64% of the input data,</li>
-<li>CV Data 16% and</li>
-<li>Test Data 20%.</li>
+<li>$64\%$ &ndash; training data,</li>
+<li>$16\%$ &ndash; cross validation data,</li>
+<li>$20\%$ &ndash; test data.</li>
 </ul></li>
-<li>We abstain from imposing a <strong>bias term</strong> by enforcing an extra component set to constant $1$ in $U$ and $V$, since the embeddings are free to learn biases if necessary.</li>
+<li>We abstain from explicitly imposing a <strong>bias term</strong> by enforcing an extra component that&rsquo;s equal to constant $1$ in $U$ and $V$. In the matrix factorization scheme, the embeddings are free to learn biases if necessary.</li>
 <li>Since no particular bounds are imposed on the entries in the embedding vectors $U_{i}$ and $V_{j}$. The model is free to learn positive or negative real numbers.<br /></li>
 </ul>
 
@@ -250,77 +242,133 @@ $V$: movies feature matrix</p>
 
 <hr />
 
-<h2 id="4-challenges-in-developing-the-model-on-tensorflow">4. Challenges in Developing the Model on <code>tensorflow</code></h2>
+<h2 id="4-linear-nonlinear-and-cross-features">4. Linear, Nonlinear and Cross Features</h2>
+
+<h5 id="linear-terms">Linear Terms:</h5>
 
 <ul>
-<li><p>A particular challenge in implementing a Matrix Factorization algorithm on <code>tensorflow</code> is that we can&rsquo;t naively pass <code>None</code> for the <code>shape</code> argument while declaring the input data tensors <code>R</code> and <code>R_indices</code> as in <code>R = tf.placeholder(..., shape=(None))</code>.  The <code>shape</code> parameter corresponds to the number of ratings a single batch in the SGD step contains. To make the SGD work, I had to fix the <code>shape</code> of the <code>tf.placeholder</code> variables <code>R</code> and <code>R_indices</code>  to <code>shape=(BATCH_SIZE, k)</code> instead of <code>shape=(None, k)</code>.  This is a small price to pay that allows me to use <code>tensorflow</code> which provides me GPU computation and also backprop with symbolic differentiation. This gave me the flexibility to experiment with additional nonlinear terms in loss function without having the worry about the partial differentials with respect to the tunable variables.</p>
+<li><p>Standard collaborative filtering model consists of only the linear term, where each rating is expressed as a dot product of the feature vectors:
+$$R_{ij} = U_{i}^\ \cdot V_{j}^T$$
+In this dot product, $p^{th}$ feature coefficient of $U_{i}$ is multiplied with the corresponding $p^{th}$ coefficient of $V_{j}$. The contributions from each feature are added up into a total summation.</p></li>
+
+<li><p>Subsequently, adding a sigmoid filter $R_{ij} = 5 \cdot \sigma(U_i^\ \cdot V_j^T)$, where $\sigma$ is the sigmoid function, lowered the MAE Rate from approximately <code>.64</code> to <code>.62</code>. The reason for this is that in the absence of sigmoid activation, some predictions fall outside the range $[0, 5]$. Sigmoid activation squashes the predictions to the correct range and hence closer to their actual values.<br />
+The Mean Absolute Error (MAE) on the cross validation set is:<br />
+$$=&gt; Linear\ Model: MAE (CV) = 0.624$$</p></li>
+</ul>
+
+<h5 id="nonlinear-terms">Nonlinear Terms:</h5>
+
+<ul>
+<li>I experimented with adding a 2<sup>nd</sup> order term to the rating model:<br />
+$$(R_{nl})_{ij} = \sum_{p=1}^k \Big(U_{ip} V_{jp}\Big)^2$$</li>
+</ul>
+
+<pre><code>u_cdot_v_square = tf.square(tf.multiply(U_stack, V_stack)) 
+nl = tf.reduce_sum(u_cdot_v_square, axis=1)
+R_pred = R_pred + alpha*nl
+R_pred = tf.sigmoid(R_pred) * 5
+</code></pre>
+
+<ul>
+<li>However, the quadratic terms didn&rsquo;t result in any discernible reduction in the final error rate and it was not used in the final model.<br /></li>
+</ul>
+
+<h5 id="nonlinear-cross-feature-terms">Nonlinear Cross Feature Terms:</h5>
+
+<ul>
+<li><p>The rating prediction model with only the addition of cross-features on top of the linear term takes the following form:
+$$(R_{xft})_{ij} = \sum_{p=1}^{k}\sum_{q=1}^{k} \Big((X_{UV})_{pq} U_{ip} V_{jq} + (X_{UU})_{pq} U_{ip} U_{jq}+ (X_{VV})_{pq} V_{ip}  V_{jq}\Big)$$
+where,
+$X_{UV}$, $X_{UU}$, $X_{VV}$ are cross feature coefficient tensors of size $k \times k$. Their entries that make up the tensors are to be learned by the model.
+For instance, in the second term of the above equation the features of $U_i$ and $V_j$ are crossed over: feature-$p$ of $U_i$ gets multiplied by feature-$q$ of $V_j$. The same feature crossings are also performed amongst user vectors in 3rd term and movie vectors in the 4th term. This allows the model to learn cross interactions such as, for example for the $U_i$-$V_j$ term, if a user likes the actor Tom Cruise (a large value for $U_{ip}$), but she doesn&rsquo;t like dark and suspenseful movies (a small value for $U_{iq}$), however, she likes the movie Eyes Wide Shut (even though it has a high value for $V_{jq}$), perhaps because an underlying reason that makes her not like dark suspenseful movies perhaps vanishes if Tom Cruise is in the movie. For a model to capture such a pattern, it has to allow some sort of <strong>nonlinear cross feature interactions</strong> between features $p$ and $q$. The gain in the addition of cross feature terms over the linear terms on the MAE Rate is a mere $1.5\%$:
+$$=&gt; Nonlinear\ Cross\ Feature\ Model: MAE (CV) = 0.615$$</p></li>
+
+<li><p>My intuition is that cross features must play a crucial role in explaining the rating patterns in the user population. Yet, we&rsquo;re only adding $3 k^2$ more tunable variables that are aimed to capture this nonlinear pattern for the whole population of users and movies. On the other hand, the linear feature matrices $U$ and $V$ carry $12800168 \cdot 2k$ tunable variables for the whole training set. For a typical value of $k=10$, the linear feature terms have approximately 850,000 more tunable variables than the cross feature terms.
+A better model that&rsquo;s aimed to capture the cross feature interactions could incorporate a new $X_{UV}$, $X_{UU}$, $X_{VV}$ represent the behavior</p></li>
+
+<li><p>The computational price paid for a mere $1.5\%$ increase in MAE Rate is that the runtime increased from $30\ sec/epoch$ for pure linear model to $60\ sec/epoch$ when incorporating all 3 types of nonlinear feature crossings:
+<p align="center">($U_{ip}$ ~ $V_{jq}$),&nbsp; ($U_{ip}$ ~ $U_{iq}$),&nbsp; ($V_{jp}$ ~ $V_{jq}$)</p></p></li>
+</ul>
+
+<hr />
+
+<h2 id="5-regularization">5. Regularization</h2>
+
+<p>An $L_2$ regularization term naively applied on the feature vectors $U$ and $V$ would penalize all nonzero components. This would encourage the coefficients in $U$ and $V$ to be small.  However, we would rather have the coefficients in $U$ and $V$ regress towards the mean rating of the corresponding user (or alternatively the mean rating of the corresponding movie) instead of zero. And for the non-linear cross feature terms I kept the regularization term naive to regress towards the value zero.</p>
+
+<p>In essence, we are imposing a penalty for any behavior that diverges from the average pattern.  In this spirit, I formulated the $L_2$ regularization term as follows:</p>
+
+<p>$$\Omega_{linear} = \sum_{i=1}^m\ (U_i - \mu_{U_i})^2 +\sum_{j=1}^n\ (V_j - \mu_{V_j})^2$$
+$$\Omega_{xft} = \sum_{p=1}^k \sum_{q=1}^k\ U_pV_{q} + \sum_{p=1}^k \sum_{q=1}^k\ U_pU_{q} + \sum_{p=1}^k \sum_{q=1}^k\ V_pV_{q}$$</p>
+
+<p>where,<br />
+$\Omega_{linear}$: regularization term for linear features<br />
+$\Omega_{xft}$: regularization term for cross features<br />
+$\mu_{U_i}$: mean rating for user-$i$<br />
+$\mu_{V_j}$: mean rating for movie-$j$<br />
+$UV_{ij}$: cross feature term between user-$i$ and movie-$j$<br />
+$UU_{ij}$: cross feature term between user-$i$ and user-$j$<br />
+$VV_{ij}$: cross feature term between movie-$i$ and movie-$j$</p>
+
+<pre><code class="language-python">reg = (tf.reduce_sum((stacked_U - stacked_u_mean)**2) + 
+       tf.reduce_sum((stacked_V - stacked_v_mean)**2) + 
+       tf.reduce_sum((UV_xft**2)) + 
+       tf.reduce_sum((UU_xft**2)) + 
+       tf.reduce_sum((VV_xft**2))) / (BATCH_SIZE*k)
+</code></pre>
+
+<p>However, regularization didn&rsquo;t improve the MAE Rate because of the over abundance of data which is already the best implicit regularizer than any other explicitly devised regularization term.</p>
+
+<hr />
+
+<h2 id="6-practical-methodology-and-developing-the-model-on-tensorflow">6. Practical Methodology and Developing the Model on <code>tensorflow</code></h2>
+
+<ul>
+<li>A particular challenge in implementing a Matrix Factorization algorithm on <code>tensorflow</code> is that we can&rsquo;t naively pass <code>None</code> for the <code>shape</code> argument while declaring the input data tensors <code>R</code> and <code>R_indices</code> as in <code>R = tf.placeholder(..., shape=(None))</code>.  The <code>shape</code> parameter corresponds to the number of ratings a single batch in the SGD step contains. To make the SGD work, I had to fix the <code>shape</code> of the <code>tf.placeholder</code> variables <code>R</code> and <code>R_indices</code>  to <code>shape=(BATCH_SIZE, k)</code> instead of <code>shape=(None, k)</code>.  This is a small price to pay that allows me to use <code>tensorflow</code> which provides me GPU computation and also backprop with symbolic differentiation. This gave me the flexibility to experiment with additional nonlinear terms in loss function without having the worry about the partial differentials with respect to the tunable variables.</li>
+</ul>
 
 <pre><code class="language-python">R = tf.placeholder(dtype=tf.float32, shape=(BATCH_SIZE,))
 R_indices = tf.placeholder(dtype=tf.int32, shape=(BATCH_SIZE,2))
 u_mean = tf.placeholder(dtype=tf.float32, shape=(BATCH_SIZE,1)) 
 v_mean = tf.placeholder(dtype=tf.float32, shape=(BATCH_SIZE,1)) 
-</code></pre></li>
+</code></pre>
 
-<li><p>At each SGD step a mini-batch of rating data $R_{ij}$ and the corresponding user-movie index pairs $(i,j)$ are fed into the computational graph. Since each $R_{ij}$ is represented as the dot product $U_i \cdot V_j^T$, we have to stack the corresponding embedding vectors into 2-D tensors <code>U_stack</code> and <code>V_stack</code> where both <code>U_stack.getshape()</code> and <code>V_stack.getshape()</code> equal to <code>(BATCH_SIZE,k)</code>.<br />
-The implementation of stacking tensors  on<code>tensorflow</code> is a little trickier than in <code>numpy</code>. It&rsquo;s done like this:</p>
+<ul>
+<li>At each SGD step a mini-batch of rating data $R_{ij}$ and the corresponding user-movie index pairs $(i,j)$ are fed into the computational graph. Since each $R_{ij}$ is represented as the dot product $U_i^\ \cdot V_j^T$, we have to stack the corresponding embedding vectors into 2-D tensors <code>U_stack</code> and <code>V_stack</code> where both <code>U_stack.getshape()</code> and <code>V_stack.getshape()</code> equal to <code>(BATCH_SIZE,k)</code>.<br />
+The implementation of stacking tensors  on<code>tensorflow</code> is a little trickier than in <code>numpy</code>. It&rsquo;s done like this:<br /></li>
+</ul>
 
 <pre><code class="language-python">def get_stacked_UV(R_indices, R, U, V, k, BATCH_SIZE):
-u_idx = R_indices[:,0]
-v_idx = R_indices[:,1]
-rows_U = tf.transpose(np.ones((k,1), dtype=np.int32)*u_idx)
-rows_V = tf.transpose(np.ones((k,1), dtype=np.int32)*v_idx)
-cols = np.arange(k, dtype=np.int32).reshape((1,-1))
-cols = tf.tile(cols, [BATCH_SIZE,1])
+    u_idx = R_indices[:,0]
+    v_idx = R_indices[:,1]
+    rows_U = tf.transpose(np.ones((k,1), dtype=np.int32)*u_idx)
+    rows_V = tf.transpose(np.ones((k,1), dtype=np.int32)*v_idx)
+    cols = np.arange(k, dtype=np.int32).reshape((1,-1))
+    cols = tf.tile(cols, [BATCH_SIZE,1])
 
-indices_U = tf.stack([rows_U, cols], -1)
-indices_V = tf.stack([rows_V, cols], -1)
+    indices_U = tf.stack([rows_U, cols], -1)
+    indices_V = tf.stack([rows_V, cols], -1)
 
-stacked_U = tf.gather_nd(U, indices_U)
-stacked_V = tf.gather_nd(V, indices_V)
+    stacked_U = tf.gather_nd(U, indices_U)
+    stacked_V = tf.gather_nd(V, indices_V)
     
-return stacked_U, stacked_V
-</code></pre></li>
+    return stacked_U, stacked_V
+</code></pre>
+
+<h5 id="initialization">Initialization:</h5>
+
+<ul>
+<li>The feature vectors $U$ and $V$ are initialized by sampling from a Gaussian Distribution with mean $\mu = \sqrt{ 3.5/k}$, and standard deviation $\sigma = 0.2$. For the cross feature vectors $X_{UV}$, $X_{UV}$ and $X_{VV}$, the mean was chosen by practical experiments to be $\mu=-1/k$ and standard deviation $\sigma = 0.2$ as in the linear feature vectors.</li>
 </ul>
 
 <hr />
 
-<h2 id="5-linear-and-nonlinear-features">5. Linear and Nonlinear Features</h2>
-
-<ul>
-<li><p><code>R_pred = tf.sigmoid(R_pred) * 5</code> dropped the <code>MAE_test</code> approximately from <code>.64</code> to <code>.62</code>. The reason for it is that the error rate, in the absence of sigmoid activation, some predictions can get bigger than 5 and some smaller than 0. Sigmoid activation brings the predictions closer to their actual values.</p></li>
-
-<li><p>However, adding squared dot product term along with the linear dot product, didn&rsquo;t produce any tangible improvement and was discarded from the final model.</p>
-
-<pre><code class="language-python">u_cdot_v_square = tf.square(tf.multiply(U_stack_, V_stack)) 
-nl = tf.reduce_sum(u_cdot_v_square, axis=1)
-R_pred = R_pred + alpha*nl
-R_pred = tf.sigmoid(R_pred) * 5
-</code></pre></li>
-</ul>
-
-<h2 id="6-cross-features">6. Cross Features:</h2>
-
-<ul>
-<li><p>In the linear collaborative filtering model, $$R_{ij} = U_{i} \cdot V_{j}^T$$ $p^{th}$ feature of $U_{i}$ is multiplied with the corresponding $p^{th}$ feature of $V_{j}$.<br />
-$$=&gt; Linear\ Model: MAE (CV) = 0.6237$$</p></li>
-
-<li><p>The rating prediction with cross-features:
-$$R_{ij} = U_{i} \cdot V_{j}^{T} + \sum_{p=0}^{k}\sum_{q=0}^{k} w_{pq} (U_{ip} \cdot V_{jq}^{T})$$</p></li>
-
-<li><p>Here, feature $p$ of user $i$ is getting multiplied by feature $q$ of movie $j$. This allows the model to learn cross interactions as, for instance, if a user likes the actor Tom Cruise (that corresponds a high value for $U_{ip}$), and she doesn&rsquo;t like dark and suspenseful thrillers ($q^{th}$ feature&ndash;low value for $U_{iq}$), however, she likes the movie Eyes Wide Shut (even though it has a high value for $V_{jq}$), perhaps because an underlying reason that makes her not like dark suspenseful movies perhaps disappears if Tom Cruise is in the movie. For a model to capture such a pattern, it has to allow some sort of <strong>nonlinear cross feature interactions</strong> between features $p$ and $q$.<br />
-$$=&gt; Nonlinear\ Model: MAE (CV) = 0.6150$$</p>
-
-<pre><code>R_pred = np.dot(U,V) + alpha1*(xft) + alpha2*(uv_sq)
-</code></pre></li>
-
-<li><p>The computational price paid for a mere 1% increas in mae rate is that the runtime for one epoch went from $31$ sec for pure linear model to $60$ sec when incorporating all 3 types of nonlinear feature crossings:<br />
-<p align="center">($U_{ip}$ ~ $V_{jq}$),&nbsp; ($U_{ip}$ ~ $U_{iq}$),&nbsp; ($V_{jp}$ ~ $V_{jq}$)</p></p></li>
-</ul>
-
-<h2 id="7-improvements-on-the-algorithm">7. Improvements on the Algorithm</h2>
+<h2 id="references">References:</h2>
 
 <ol>
-<li>The regularization term needs to take into account the average rating for each user $U_i$, $\mu_{U_i}$.</li>
+<li>Learning From Data, Yaser S. Abu-Mostafa, Malik Magdon-Ismail, Hsuan-Tien Lin, 2012.</li>
+<li>Machine Learning, Andrew Ng, Coursera online class, 2011.</li>
+<li>Deep Learning, Ian Goodfellow, Yoshua Bengio, Aaron Courville, 2016.</li>
 </ol>
 
 </div>
