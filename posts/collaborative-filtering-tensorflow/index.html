@@ -64,7 +64,7 @@
 
 <h2 id="1-problem-description">1. Problem Description</h2>
 
-<p>We are given a rating matrix $R$ where only a small fraction of the entries $R_{ij}$ are provided; otherwise the rest is missing. The task is to predict those missing entries. As in most Machine Learning problems the assumption here is that there&rsquo;s an underlying stationary pattern as to how users rate the movies.</p>
+<p>We are given a rating matrix $R$ where only a small fraction of the entries are provided; otherwise the rest is missing. The task of a Recommender Model is to predict those missing entries. As in most Machine Learning problems the assumption here is that there&rsquo;s an underlying pattern of how users rate movies.</p>
 
 <p>By the nature of the problem, $R$ is a sparse matrix, where the sparsity comes not from zero entries but from empty records. Therefor, we represent the training data in 3 columns: $i$: user ID , $j$: movie ID and $R_{ij}$: the rating (see Table 1).</p>
 
@@ -162,7 +162,45 @@
 
 <hr />
 
-<h2 id="2-collaborative-filtering-model">2. Collaborative Filtering Model</h2>
+<h2 id="2-movielens-20m-dataset">2. MovieLens 20M dataset</h2>
+
+<ul>
+<li><a href="https://grouplens.org/datasets/movielens/20m/">MovieLens dataset</a> data set consists of 20,000,263 ratings from 138,493 users on 27,278 movies. Ratings are provided for only $0.5\%$ of all possible entries in $R$.</li>
+<li>All ratings are given in the interval [0.5, 5.0] with increments of 0.5:<br />
+{0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0}</li>
+<li>Since the input data was ordered according to user IDs, it was crucial to shuffle the data before splitting it into training, CV and test sets.</li>
+<li>The Input Data is split accordingly:
+
+<ul>
+<li>$64\%$ &ndash; training data,</li>
+<li>$16\%$ &ndash; cross validation data,</li>
+<li>$20\%$ &ndash; test data.</li>
+</ul></li>
+<li>We abstain from imposing an explicit <strong>bias term</strong> in the feature vectors $U$ and $V$. In the matrix factorization scheme, the embeddings are free to learn biases if necessary.</li>
+<li>Since no particular bounds are imposed on the entries in the feature vectors $U$ and $V$, the model is free to learn positive or negative real numbers as feature coefficients.<br /></li>
+</ul>
+
+<p><div style="width:700 px">
+    <div style="float:left; width:360">
+        <img src="/fig1.png" alt="fig1" width="360" />
+    </div>
+    <div style="float:left; width:300">
+        <img src="/fig2.png" alt="fig2" width="360" />
+    </div>
+    <div style="float:left; width:300">
+        <img src="/fig3.png" alt="fig3" width="360" />
+    </div>
+    <div style="float:left; width:300">
+        <img src="/fig4.png" alt="fig4" width="360" />
+    </div>
+    <div style="clear:both"></div>
+</div>
+<br>
+<font size="+1"><b><p align="center">Figure 2. Histogram of (<em>a</em>) all ratings in ml-20m data (<em>b</em>) mean of ratings per user (<em>c</em>) mean of ratings per movie, and (<em>d</em>)
+    number of ratings provided by users. Minimum number of ratings provided by a user is 20, and maximum is 9254 ratings.
+</p></b></font></p>
+
+<h2 id="3-collaborative-filtering-model">3. Collaborative Filtering Model</h2>
 
 <p>The terms <em>Collaborative Filtering</em>, <em>Matrix Factorization</em> and <em>Low-Rank Matrix Factorization</em> all refer to the same recommender system model. In essence, this model is based on the assumption that users who liked the same movies are likely to feel similarly towards other movies. The term <em>collaborative</em> refers to the observation that when a large set of users are involved in rating the movies, these users are effectively collaborating to get better movie ratings for everyone because every new rating will help the algorithm learn better features for the <em>users-movies</em> system. Later, these features are used by the model to make better rating predictions for everyone.</p>
 
@@ -198,47 +236,7 @@ $V$: movies feature matrix</p>
 &emsp;&emsp;&emsp; 2. how much that feature is favored by the user-$i$.</p>
 
 <p><img src="/Drawing.png" alt="Drawing" width="1000" />
-<font size="+1"><p align="center"><b>Figure 1. A conceptual sketch of the Ratings data matrix $R$ decomposed into its factors: user feature matrix, $U$, and movie feature matrix, $V$. Dots in the figure &ldquo;$\cdot$&rdquo; illustrate given values; and question marks &ldquo;$?$&rdquo; the missing values. Each entry $R_{ij}$ is expressed as a dot product of the user and movie embedding vectors $U_i$ and $V_j$, respectively.</b></p></font></p>
-
-<hr />
-
-<h2 id="3-movielens-20m-dataset">3. MovieLens 20M dataset</h2>
-
-<ul>
-<li><a href="https://grouplens.org/datasets/movielens/20m/">MovieLens dataset</a> data set consists of 20,000,263 ratings from 138,493 users on 27,278 movies. Ratings are provided for only $0.5\%$ of all possible entries in $R$.</li>
-<li>All ratings are given at intervals of 0.5:<br />
-{0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0}</li>
-<li>Since the input data was ordered according to user IDs, it was crucial to shuffle the data before splitting it into training, CV and test sets.</li>
-<li>The Input Data is split accordingly:
-
-<ul>
-<li>$64\%$ &ndash; training data,</li>
-<li>$16\%$ &ndash; cross validation data,</li>
-<li>$20\%$ &ndash; test data.</li>
-</ul></li>
-<li>We abstain from explicitly imposing a <strong>bias term</strong> by enforcing an extra component that&rsquo;s equal to constant $1$ in $U$ and $V$. In the matrix factorization scheme, the embeddings are free to learn biases if necessary.</li>
-<li>Since no particular bounds are imposed on the entries in the embedding vectors $U_{i}$ and $V_{j}$. The model is free to learn positive or negative real numbers.<br /></li>
-</ul>
-
-<p><div style="width:700 px">
-    <div style="float:left; width:360">
-        <img src="/fig1.png" alt="fig1" width="360" />
-    </div>
-    <div style="float:left; width:300">
-        <img src="/fig2.png" alt="fig2" width="360" />
-    </div>
-    <div style="float:left; width:300">
-        <img src="/fig3.png" alt="fig3" width="360" />
-    </div>
-    <div style="float:left; width:300">
-        <img src="/fig4.png" alt="fig4" width="360" />
-    </div>
-    <div style="clear:both"></div>
-</div>
-<br>
-<font size="+1"><b><p align="center">Figure 2. Histogram of (<em>a</em>) all ratings in ml-20m data (<em>b</em>) mean of ratings per user (<em>c</em>) mean of ratings per movie, and (<em>d</em>)
-    number of ratings provided by users. Minimum number of ratings provided by a user is 20, and maximum is 9254 ratings.
-</p></b></font></p>
+<font size="+1"><p align="center"><b>Figure 1. A conceptual sketch of the ratings matrix $R$ decomposed into its factors: user feature matrix, $U$, and movie feature matrix, $V$. Dots in the figure &ldquo;$\cdot$&rdquo; illustrate given values; and question marks &ldquo;$?$&rdquo; the missing values. Each entry $R_{ij}$ is expressed as a dot product of the user and movie embedding vectors $U_i$ and $V_j$, respectively.</b></p></font></p>
 
 <hr />
 
@@ -251,7 +249,7 @@ $V$: movies feature matrix</p>
 $$(R_{lin})_{ij} = U_{i}^\ \cdot V_{j}^T$$
 In this dot product, $p^{th}$ feature coefficient of $U_{i}$ is multiplied with the corresponding $p^{th}$ coefficient of $V_{j}$. The contributions from each feature are added up into a total summation.</p></li>
 
-<li><p>Subsequently, adding a sigmoid filter $R_{ij} = 5 \cdot \sigma(U_i^\ \cdot V_j^T)$, where $\sigma$ is the sigmoid function, lowered the MAE Rate from approximately <code>.64</code> to <code>.62</code>. The reason for this is that in the absence of sigmoid activation, some predictions fall outside the range $[0, 5]$. Sigmoid activation squashes the predictions to the correct range and hence closer to their actual values.<br />
+<li><p>Subsequently, adding a sigmoid filter $R_{ij} = 4.5 \cdot \sigma(U_i^\ \cdot V_j^T) + 0.5$, where $\sigma$ is the sigmoid function, lowered the MAE Rate from approximately <code>.64</code> to <code>.62</code>. The reason for this is that in the absence of sigmoid activation, some predictions fall outside the range $[0, 5]$. Sigmoid activation squashes the predictions to the correct range and hence closer to their actual values.<br />
 The Mean Absolute Error (MAE) on the cross validation set for the pure linear model is:<br />
 $$\hat{R} = R_{lin}$$
 $$=&gt; Linear\ Model: MAE (CV) = 0.624$$</p></li>
@@ -273,6 +271,9 @@ $$(R_{nl})_{ij} = \sum_{p=1}^k \Big[U_{ip} V_{jp}\Big]^2$$</p></li>
 $$(R_{xft})_{ij} = \sum_{p=1}^{k}\sum_{q=1}^{k} \Big[(X_{UV})_{pq}\ U_{ip} V_{jq}\Big]$$
 $$+\sum_{p=1}^{k}\sum_{q=p+1}^{k} \Big[(X_{UU})_{pq}\ U_{ip} U_{jq}+ (X_{VV})_{pq}\ V_{ip}  V_{jq}\Big]$$
 where<br />
+$(X_{UV})_{pq}$: user-movie cross feature coefficients between feature-$p$ and feature-$q$<br />
+$(X_{UU})_{pq}$: user-user cross feature coefficients between feature-$p$ and feature-$q$<br />
+$(X_{VV})_{pq}$: movie-movie cross feature coefficients between feature-$p$ and feature-$q$<br />
 $X_{UV}$, $X_{UU}$, $X_{VV}$ are cross feature coefficient tensors of size $k \times k$ to be learned by the SGD optimization algorithm.<br />
 <br />
 For instance, in the second term of the above equation, feature-$p$ of $U_i$ gets multiplied by feature-$q$ of $V_j$ and the contribution to the rating $R_{ij}$ is controlled by the cross feature coefficient $(X_{UV})_{pq}$. The same feature crossings are also performed within user vectors in 3rd term and movie vectors in the 4th term.<br />
@@ -293,21 +294,18 @@ A better model that&rsquo;s aimed to capture the cross feature interactions for 
 
 <h2 id="5-regularization">5. Regularization</h2>
 
-<p>An $L_2$ regularization term naively applied on the feature vectors $U$ and $V$ would penalize all nonzero components. This would encourage the coefficients in $U$ and $V$ to be small.  However, we would rather have the coefficients in $U$ and $V$ regress towards the mean rating of the corresponding user (or alternatively the mean rating of the corresponding movie) instead of zero. And for the non-linear cross feature terms I kept the regularization term naive to regress towards the value zero.</p>
+<p>An $L_2$ regularization term applied naively on the feature vectors $U$ and $V$ would penalize all nonzero components. This would encourage the coefficients in $U$ and $V$ to be close to zero.  However, we would rather have the coefficients in $U$ and $V$ regress towards the mean rating of the corresponding user (or alternatively corresponding movie) instead of zero. And for the nonlinear cross feature terms I kept the regularization term naive to regress towards the value zero.</p>
 
 <p>In essence, we are imposing a penalty for any behavior that diverges from the average pattern.  In this spirit, I formulated the $L_2$ regularization term as follows:</p>
 
-<p>$$\Omega_{linear} = \sum_{i=1}^m\ \Big(U_i - \mu_{U_i} \Big)^2 +\sum_{j=1}^n\ \Big(V_j - \mu_{V_j}\ \Big)^2$$
+<p>$$\Omega_{lin} = \sum_{i=1}^m\ \Big(U_i - \mu_{U_i} \Big)^2 +\sum_{j=1}^n\ \Big(V_j - \mu_{V_j}\ \Big)^2$$
 $$\Omega_{xft} = \sum_{p=1}^k \sum_{q=1}^k\ (X_{UV})_{pq} + \sum_{p=1}^k \sum_{q=1}^k\ (X_{UU})_{pq} + \sum_{p=1}^k \sum_{q=1}^k\ (X_{VV})_{pq}$$</p>
 
 <p>where,<br />
 $\Omega_{linear}$: regularization term for linear features<br />
 $\Omega_{xft}$: regularization term for cross features<br />
 $\mu_{U_i}$: mean rating for user-$i$<br />
-$\mu_{V_j}$: mean rating for movie-$j$<br />
-$UV_{ij}$: cross feature term between user-$i$ and movie-$j$<br />
-$UU_{ij}$: cross feature term between user-$i$ and user-$j$<br />
-$VV_{ij}$: cross feature term between movie-$i$ and movie-$j$</p>
+$\mu_{V_j}$: mean rating for movie-$j$</p>
 
 <pre><code class="language-python">reg = (tf.reduce_sum((stacked_U - stacked_u_mean)**2) + 
        tf.reduce_sum((stacked_V - stacked_v_mean)**2) + 
@@ -316,14 +314,16 @@ $VV_{ij}$: cross feature term between movie-$i$ and movie-$j$</p>
        tf.reduce_sum((VV_xft**2))) / (BATCH_SIZE*k)
 </code></pre>
 
-<p>However, regularization didn&rsquo;t improve the MAE Rate because of the over abundance of data which is already the best implicit regularizer than any other explicitly devised regularization term.</p>
+<p>However, regularization didn&rsquo;t improve the MAE Rate because of the over abundance of data which is already the best implicit regularizer than any other explicitly imposed regularization term.</p>
 
 <hr />
 
 <h2 id="6-practical-methodology-and-developing-the-model-on-tensorflow">6. Practical Methodology and Developing the Model on <code>tensorflow</code></h2>
 
+<h5 id="shape-of-input-tensors-r-and-r-indices">Shape of input tensors <code>R</code> and <code>R_indices</code>:</h5>
+
 <ul>
-<li>A particular challenge in implementing a Matrix Factorization algorithm on <code>tensorflow</code> is that we can&rsquo;t naively pass <code>None</code> for the <code>shape</code> argument while declaring the input data tensors <code>R</code> and <code>R_indices</code> as in <code>R = tf.placeholder(..., shape=(None))</code>.  The <code>shape</code> parameter corresponds to the number of ratings a single batch in the SGD step contains. To make the SGD work, I had to fix the <code>shape</code> of the <code>tf.placeholder</code> variables <code>R</code> and <code>R_indices</code>  to <code>shape=(BATCH_SIZE, k)</code> instead of <code>shape=(None, k)</code>.  This is a small price to pay that allows me to use <code>tensorflow</code> which provides me GPU computation and also backprop with symbolic differentiation. This gave me the flexibility to experiment with additional nonlinear terms in loss function without having the worry about the partial differentials with respect to the tunable variables.</li>
+<li>A particular challenge in implementing a Matrix Factorization algorithm on <code>tensorflow</code> is that we can&rsquo;t pass <code>None</code> for the <code>shape</code> argument while declaring the input data tensors <code>R</code> and <code>R_indices</code> as in <code>R = tf.placeholder(..., shape=(None))</code>.  The <code>shape</code> parameter corresponds to the number of ratings a single batch contains. To make the SGD work, I had to fix the <code>shape</code> of the <code>tf.placeholder</code> variables <code>R</code> and <code>R_indices</code>  to <code>shape=(BATCH_SIZE, k)</code>.  This is a small price to pay which allowed me to build the collaborative filtering model on <code>tensorflow</code> and use GPU computation and symbolic differentiation. It was also easier to experiment with additional nonlinear terms in the loss function without having the worry about computing the partial differentials by hand.</li>
 </ul>
 
 <pre><code class="language-python">R = tf.placeholder(dtype=tf.float32, shape=(BATCH_SIZE,))
@@ -333,8 +333,8 @@ v_mean = tf.placeholder(dtype=tf.float32, shape=(BATCH_SIZE,1))
 </code></pre>
 
 <ul>
-<li>At each SGD step a mini-batch of rating data $R_{ij}$ and the corresponding user-movie index pairs $(i,j)$ are fed into the computational graph. Since each $R_{ij}$ is represented as the dot product $U_i^\ \cdot V_j^T$, we have to stack the corresponding embedding vectors into 2-D tensors <code>U_stack</code> and <code>V_stack</code> where both <code>U_stack.getshape()</code> and <code>V_stack.getshape()</code> equal to <code>(BATCH_SIZE,k)</code>.<br />
-The implementation of stacking tensors  on<code>tensorflow</code> is a little trickier than in <code>numpy</code>. It&rsquo;s done like this:<br /></li>
+<li>At each SGD step a mini-batch of ratings $R_{ij}$ and the corresponding user-movie index pairs $(i,j)$ are fed into the computational graph. Since each $\hat{R}_{ij}$ is represented as the dot product $U_i^\ \cdot V_j^T$, we have to stack the corresponding embedding vectors into 2-D tensors <code>U_stack</code> and <code>V_stack</code> where both <code>U_stack.getshape()</code> and <code>V_stack.getshape()</code> equal to <code>(BATCH_SIZE,k)</code>.<br />
+The implementation of stacking tensors  on<code>tensorflow</code> is a little trickier than it would be in <code>numpy</code>:</li>
 </ul>
 
 <pre><code class="language-python">def get_stacked_UV(R_indices, R, U, V, k, BATCH_SIZE):
