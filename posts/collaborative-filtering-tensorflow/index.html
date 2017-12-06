@@ -13,7 +13,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
-  <title>A Collaborative Filtering Model on tensorflow with Nonlinear Cross Features &middot; Theory of Machines</title>
+  <title>A Matrix Factorization Model on tensorflow (with Nonlinear Cross Features) &middot; Theory of Machines</title>
 
   
   <link rel="stylesheet" href="https://ozkansafak.github.io/css/print.css" media="print">
@@ -42,7 +42,7 @@
       <a href="https://ozkansafak.github.io/"><h1>Theory of Machines</h1></a>
       <p class="lead">
        <br/>
-How I Learned to Stop Worrying and Love the Machine
+... or How I Learned to Stop Worrying and Love the Machine
       </p>
     </div>
 
@@ -57,7 +57,7 @@ How I Learned to Stop Worrying and Love the Machine
 
     <div class="content container">
     <div class="post">
-  <h1>A Collaborative Filtering Model on tensorflow with Nonlinear Cross Features</h1>
+  <h1>A Matrix Factorization Model on tensorflow (with Nonlinear Cross Features)</h1>
   <span class="post-date">Sat, Nov 18, 2017</span>
   
 
@@ -197,47 +197,47 @@ How I Learned to Stop Worrying and Love the Machine
     <div style="clear:both"></div>
 </div>
 <br>
-<font size="+1"><b><p align="center">Figure 2. Histogram of (<em>a</em>) all ratings in ml-20m data (<em>b</em>) mean of ratings per user (<em>c</em>) mean of ratings per movie, and (<em>d</em>)
+<font size="+1"><b><p align="center">Figure 1. Histogram of (a) all ratings in ml-20m data (b) mean of ratings per user (c) mean of ratings per movie, and (d)
     number of ratings provided by users. Minimum number of ratings provided by a user is 20, and maximum is 9254 ratings.
 </p></b></font></p>
 
-<h2 id="3-collaborative-filtering-model">3. Collaborative Filtering Model</h2>
+<h2 id="3-matrix-factorization-model">3. Matrix Factorization Model</h2>
 
-<p>The terms <em>Collaborative Filtering</em>, <em>Matrix Factorization</em> and <em>Low-Rank Matrix Factorization</em> all refer to the same recommender system model. In essence, this model is based on the assumption that users who liked the same movies are likely to feel similarly towards other movies. The term <em>collaborative</em> refers to the observation that when a large set of users are involved in rating the movies, these users are effectively collaborating to get better movie ratings for everyone because every new rating will help the algorithm learn better features for the <em>users-movies</em> system. Later, these features are used by the model to make better rating predictions for everyone.</p>
+<p>The terms  <em>Matrix Factorization</em>, <em>Collaborative Filtering</em>, and <em>Low-Rank Matrix Factorization</em> all refer to the same recommender system model.  In essence, this model is based on the assumption that users who liked the same movies are likely to feel similarly towards other movies.  The term <em>collaborative</em> refers to the observation that when a large set of users are involved in rating the movies, these users effectively collaborate to help the model to  better predict the movie ratings for everyone because every new rating will help the algorithm learn better features for the complete user-movie system.</p>
 
-<p>The Collaborative Filtering Model can also be described as reconstructing a <strong>low rank approximation</strong> of matrix $R$ via its <strong>Singular Value Decomposition</strong> $R = U \cdot \Sigma \cdot V^T$. The low-rank reconstruction is achieved by only retaining the largest $k$ singular values, $R_k=U \cdot \Sigma_k \cdot V^T$.</p>
+<p>The Collaborative Filtering Model can also be described as reconstructing a <strong>low rank approximation</strong> of matrix $R$ via its <strong>Singular Value Decomposition</strong> $R = U \cdot \Sigma \cdot V^T$. The low-rank reconstruction is achieved by only retaining the largest $k$ singular values, $R_k = U \cdot \Sigma_k \cdot V^T$.</p>
 
 <p><strong>Eckart-Young Theorem</strong> states that if $R_k$ is the best rank-$k$ approximation of $R$, then it&rsquo;s necessary that:</p>
 
-<p>&emsp;&emsp;&emsp;   1. $R_k$ minimizes the Frobenius norm $||R-R_k||_F^2$ and<br />
-&emsp;&emsp;&emsp;   2. $R_k$ can be constructed by retaining only the largest $k$ singular values in $\Sigma_k$ of the SVD formulation.</p>
+<p>&emsp;&emsp;&emsp;   1. $R_k$ minimizes the Frobenius norm $||R - R_k||_F^2$ and<br />
+&emsp;&emsp;&emsp;   2. $R_k$ can be constructed by retaining only the largest $k$ singular values in the diagonal matrix $\Sigma_k$ of the SVD formulation.</p>
 
 <p>We can further absorb the diagonal matrix $\Sigma_k$ into $U$ and $V$ and express the factorization as a simple dot product between the feature matrices for users and movies.</p>
 
-<p align="center">$\hat{R}_{k(m \times n)} = U_{(m \times k)} \cdot V_{(k \times n)}^T$</p>
+<p align="center">$\hat{R}_{k(m \times n)} = U_{(m \times k)}^\ \cdot V_{(k \times n)}^T$</p>
 
 <p>where, the parentheses indicate matrix size.<br />
 $m$: number of users ($m = 138493$)<br />
 $n$: number of movies ($n = 27278$)<br />
-$k$: rank hyperparameter that we impose (typically $k=10$).<br />
+$k$: rank hyperparameter (typically $k \approx 10$).<br />
 $U$: user feature matrix<br />
 $V$: movies feature matrix</p>
 
-<p>Hence, we can formulate the problem as an <strong>optimization problem</strong> and search for all the entries in $U$ and $V$ by minimizing the following loss function $L$ via SGD.</p>
+<p>Hence, we can formulate the problem as an <strong>optimization problem</strong> minimizing the following loss function $L$ via SGD.</p>
 
 <p>$$argmin_{\ U,V}\ L = ||R - \hat{R}||_F^2$$</p>
 
-<p>It&rsquo;s important to note that the Frobenius norm is computed only as a <strong>partial summation</strong> over the entries in $\hat{R}$ where a rating is provided&mdash;or equivalently over the list of ratings as shown in Table 1. The optimization procedure searches for the values of all entries in $U$ and $V$. There are $(m+n) \times k$ many tunable variables.</p>
+<p>It&rsquo;s important to note that the Frobenius norm is computed only as a <strong>partial summation</strong> over the entries in $\hat{R}$ where a rating is provided&mdash;or equivalently over the list of ratings as shown in Table 1. The optimization procedure searches for the values of all entries in $U$ and $V$. There are $(m+n) \times k$ many such  tunable variables.</p>
 
 <p>The hyperparameter $k$ is to be chosen carefully by cross-validation. Too small a $k$ value would not be enough to explain the pattern in the data adequately (<em>underfitting</em>), and too large a $k$ value would result in a model fitting on the random noise over the pattern (<em>overfitting</em>).</p>
 
-<p>It&rsquo;s worth making a brief interpretation of the feature matrices $U$ and $V$. In the $k$-rank approximation scheme, each rating $R_{ij}$ is expressed as the dot product $U_i^\ \cdot V_j^T$ as shown in Figure 1. The goal of our optimization routine is for the model to learn a <strong>latent feature vector</strong> (or alternatively an <strong>embedding vector</strong>) for each user and movie.  The term latent implies that the features are not explicitly defined as a part of the model nor they can be interpreted definitively once the embeddings are learned. Each entry in $U_i$ and $V_j$ corresponds to the weight coefficient of an abstract feature. These features can specify the genre of the movie or how much action or drama contained in the movie or any other distinguishing quality that would help characterize how the users rate movies. Hence, the dot product representation of the ratings $R_{ij} = U_i^\ \cdot V_j^T$ expresses a <strong>linear combination</strong> of</p>
+<p>It&rsquo;s worth making a brief interpretation of the feature matrices $U$ and $V$. In the $k$-rank approximation scheme, each rating $R_{ij}$ is expressed as the dot product $U_i^\ \cdot V_j^T$ as shown in Figure 2. The goal of our optimization routine is for the model to learn a <strong>latent feature vector</strong> (or alternatively an <strong>embedding vector</strong>) for each user and movie.  The term <em>latent</em> implies that the features are not explicitly defined as a part of the model nor they can be interpreted definitively once the embeddings are learned. Each entry in $U_i$ and $V_j$ corresponds to the weight coefficient of an abstract feature. These features can specify the genre of the movie or how much action or drama contained in the movie or any other distinguishing quality that would help characterize how the users rate movies. Hence, the dot product representation of the ratings $R_{ij} = U_i^\ \cdot V_j^T$ expresses a <strong>linear combination</strong> of</p>
 
 <p>&emsp;&emsp;&emsp; 1. how much that feature is contained in the movie-$j$, and<br />
 &emsp;&emsp;&emsp; 2. how much that feature is favored by the user-$i$.</p>
 
-<p><img src="/Drawing.png" alt="Drawing" width="1000" />
-<font size="+1"><p align="center"><b>Figure 1. A conceptual sketch of the ratings matrix $R$ decomposed into its factors: user feature matrix, $U$, and movie feature matrix, $V$. Dots in the figure &ldquo;$\cdot$&rdquo; illustrate given values; and question marks &ldquo;$?$&rdquo; the missing values. Each entry $R_{ij}$ is expressed as a dot product of the user and movie embedding vectors $U_i$ and $V_j$, respectively.</b></p></font></p>
+<p><img src="/R=UV^T.png" alt="R=UV^T" width="1000" />
+<font size="+1"><p align="center"><b>Figure 2. A conceptual sketch of the ratings matrix $R$ decomposed into its factors: user and movie feature matrices, $U$ and $V$. Dots in the figure &ldquo;$\cdot$&rdquo; illustrate rating values that are provided by users; and question marks &ldquo;$?$&rdquo; the missing values. Each entry $R_{ij}$ is expressed as a dot product of the user and movie embedding vectors $U_i$ and $V_j$, respectively.</b></p></font></p>
 
 <hr />
 
@@ -246,13 +246,13 @@ $V$: movies feature matrix</p>
 <h5 id="linear-terms">Linear Terms:</h5>
 
 <ul>
-<li><p>Standard collaborative filtering model consists of only the linear term, where each rating is expressed as a dot product of the feature vectors:
+<li><p>Standard collaborative filtering model consists of only a linear term, where each rating $\hat{R}_{ij} = (R_{lin})_{ij}$ is given as follows:
 $$(R_{lin})_{ij} = U_{i}^\ \cdot V_{j}^T$$
-In this dot product, $p^{th}$ feature coefficient of $U_{i}$ is multiplied with the corresponding $p^{th}$ coefficient of $V_{j}$. The contributions from each feature are added up into a total summation.</p></li>
+In this dot product, $p^{th}$ feature coefficient of $U_{i}$ is multiplied with the corresponding $p^{th}$ coefficient of $V_{j}$. The contributions from each feature are added up into a total sum.</p></li>
 
-<li><p>Subsequently, adding a sigmoid filter $R_{ij} = 4.5 \cdot \sigma(U_i^\ \cdot V_j^T) + 0.5$, where $\sigma$ is the sigmoid function, lowered the MAE Rate from approximately <code>.64</code> to <code>.62</code>. The reason for this is that in the absence of sigmoid activation, some predictions fall outside the range $[0, 5]$. Sigmoid activation squashes the predictions to the correct range and hence closer to their actual values.<br />
-The Mean Absolute Error (MAE) on the cross validation set for the pure linear model is:<br />
-$$\hat{R} = R_{lin}$$
+<li><p>Subsequently, I added a sigmoid filter $R_{ij} = 4.5 \cdot \sigma(U_i^\ \cdot V_j^T) + 0.5$ which forced all output predictions into the interval [0.5, 5.0], where $\sigma$ is the sigmoid function. This small detail helped lower the Mean Absolute Error (MAE) Rate from approximately <code>.64</code> to <code>.62</code>. The reason for this is that in the absence of sigmoid activation, some predictions fall outside the natural range $[0.5, 5.0]$. Sigmoid activation squashes the predictions to the correct range and hence closer to their actual values.<br />
+<br />
+The MAE on the cross validation set for the pure linear model, $\hat{R} = R_{lin}$, is:
 $$=&gt; Linear\ Model: MAE (CV) = 0.624$$</p></li>
 </ul>
 
@@ -334,7 +334,7 @@ v_mean = tf.placeholder(dtype=tf.float32, shape=(BATCH_SIZE,1))
 </code></pre>
 
 <ul>
-<li>At each SGD step a mini-batch of ratings $R_{ij}$ and the corresponding user-movie index pairs $(i,j)$ are fed into the computational graph. Since each $\hat{R}_{ij}$ is represented as the dot product $U_i^\ \cdot V_j^T$, we have to stack the corresponding embedding vectors into 2-D tensors <code>U_stack</code> and <code>V_stack</code> where both <code>U_stack.getshape()</code> and <code>V_stack.getshape()</code> equal to <code>(BATCH_SIZE,k)</code>.<br />
+<li>At each SGD step a mini-batch of ratings $R_{ij}$ and the corresponding user-movie index pairs $(i,j)$ are fed into the computational graph. For this, we have to stack the corresponding embedding vectors into 2-D tensors <code>U_stack</code> and <code>V_stack</code> where both <code>U_stack.getshape()</code> and <code>V_stack.getshape()</code> equal to <code>(BATCH_SIZE,k)</code>.<br />
 The implementation of stacking tensors  on<code>tensorflow</code> is a little trickier than it would be in <code>numpy</code>:</li>
 </ul>
 
