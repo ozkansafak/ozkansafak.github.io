@@ -246,14 +246,14 @@ $V$: movies feature matrix</p>
 <h5 id="linear-terms">Linear Terms:</h5>
 
 <ul>
-<li><p>Standard collaborative filtering model consists of only a linear term:
+<li><p>Standard collaborative filtering model consists of the following linear term:
 $$\hat{R}_{ij} = (R_{lin})_{ij} = U_{i}^\ \cdot V_{j}^T$$
 In this dot product, $p^{th}$ feature coefficient of $U_{i}$ is multiplied with the corresponding $p^{th}$ coefficient of $V_{j}$. The contributions from each feature are added up into a total sum.</p></li>
 
-<li><p>Subsequently, I added a sigmoid filter $R_{ij} = 4.5 \cdot \sigma(U_i^\ \cdot V_j^T) + 0.5$ which forced all output predictions into the interval [0.5, 5.0], where $\sigma$ is the sigmoid function. This small detail helped lower the Mean Absolute Error (MAE) Rate from approximately <code>.64</code> to <code>.62</code>. The reason for this is that in the absence of sigmoid activation, some predictions fall outside the natural range $[0.5, 5.0]$. Sigmoid activation squashes the predictions to the correct range and hence closer to their actual values.<br />
+<li><p>Subsequently, I added a sigmoid filter $R_{ij} = 4.5 \cdot \sigma(U_i^\ \cdot V_j^T) + 0.5$ which forced all output predictions into the interval [0.5, 5.0], where $\sigma$ is the sigmoid function. This small detail helped lower the Mean Absolute Error (MAE) Rate from approximately <code>.64</code> to <code>.62</code>. The reason for this is that in the absence of sigmoid activation, some predictions fall outside the natural range $[0.5, 5.0]$. The sigmoid activation squashes the predictions to the correct range and hence closer to their actual values.<br />
 <br />
 The MAE on the cross validation set for the pure linear model, $\hat{R} = R_{lin}$, is:
-$$=&gt; Linear\ Model: MAE (CV) = 0.624$$</p></li>
+$$=&gt; Linear\ Model: MAE (CV) = 0.622$$</p></li>
 </ul>
 
 <h5 id="nonlinear-terms">Nonlinear Terms:</h5>
@@ -262,41 +262,38 @@ $$=&gt; Linear\ Model: MAE (CV) = 0.624$$</p></li>
 <li><p>I experimented with adding a 2<sup>nd</sup> order term to the rating model:<br />
 $$(R_{nl})_{ij} = \sum_{p=1}^k \Big[U_{ip} V_{jp}\Big]^2$$</p></li>
 
-<li><p>However, the quadratic terms didn&rsquo;t result in any discernible reduction in the final error rate and it was not used in the final model.</p></li>
+<li><p>However, the quadratic terms didn&rsquo;t result in any discernible reduction in the final error rate and it was not used in the final model.<br />
+$$+\sum_{p=1}^{k}\sum_{q=p+1}^{k} \Big[(X_{UU})_{pq}\ U_{ip} U_{jq}+ (X_{VV})_{pq}\ V_{ip}  V_{jq}\Big]$$</p></li>
 </ul>
 
 <h5 id="cross-feature-terms">Cross Feature Terms:</h5>
 
 <ul>
-<li><p>Cross feature terms introduces the following 2<sup>nd</sup> order nonlinearity to the rating model:<br />
-$$(R_{xft})_{ij} = \sum_{p=1}^{k}\sum_{q=1}^{k} \Big[(X_{UV})_{pq}\ U_{ip} V_{jq}\Big]$$
-$$+\sum_{p=1}^{k}\sum_{q=p+1}^{k} \Big[(X_{UU})_{pq}\ U_{ip} U_{jq}+ (X_{VV})_{pq}\ V_{ip}  V_{jq}\Big]$$
-where<br />
-$(X_{UV})_{pq}$: user-movie cross feature coefficients between features $p$ and $q$,<br />
-$(X_{UU})_{pq}$: user-user cross feature coefficients between features $p$ and $q$,<br />
-$(X_{VV})_{pq}$: movie-movie cross feature coefficients between features $p$ and $q$,<br />
+<li>Cross feature terms introduce the following 2<sup>nd</sup> order nonlinearity to the rating model:<br />
+$$(R_{xft})_{ij} = \sum_{p=1}^{k}\sum_{q=1}^{k} (X_{UV})_{pq}\ U_{ip} V_{jq}$$
+where,<br />
+$(X_{UV})_{pq}$: user-movie cross feature coefficient between features $p$ and $q$,<br />
 <br />
-$X_{UV}$, $X_{UU}$, $X_{VV}$ have the size $k \times k$. Their components are to be learned by the SGD optimization algorithm.<br />
-<br />
-In the second term of the above equation, feature-$p$ of $U_i$ gets multiplied by feature-$q$ of $V_j$ and the contribution to the rating $R_{ij}$ is controlled by the cross feature coefficient $(X_{UV})_{pq}$. The same feature crossings are also performed within user vectors in 3rd term and movie vectors in the 4th term.<br />
-<br />
-The interpretation of ther cross feature interaction terms could be made as follows: for the $U_i$-$V_j$ term, for example, if a user likes the actor Tom Cruise (a large value for $U_{ip}$), but she doesn&rsquo;t like dark suspenseful movies (a small value for $U_{iq}$), however, she likes the movie Eyes Wide Shut (even though it has a high value for $V_{jq}$), perhaps because an underlying reason that makes her not like dark suspenseful movies perhaps vanishes if Tom Cruise is in the movie. For a model to capture such a pattern, it has to allow some sort of <strong>nonlinear cross feature interactions</strong> between features $p$ and $q$.<br />
-<br />
-However, the gain in the addition of cross feature terms over the linear terms on the MAE Rate is a mere $1.5\%$:
+$X_{UV}$ is of size $k \times k$. Its components are to be learned by the optimization routine. In the above term, feature-$p$ of $U_i$ gets multiplied by feature-$q$ of $V_j$ and the contribution to the rating $R_{ij}$ is controlled by the cross feature coefficient $(X_{UV})_{pq}$.<br />
+<br /></li>
+
+<li><p>The interpretation of the cross feature term could be made as follows: if a user likes the actor Tom Cruise (a large value for $U_{ip}$), but she doesn&rsquo;t like dark suspenseful movies (a small value for $U_{iq}$), however, she likes the movie Eyes Wide Shut (even though it has a high value for $V_{jq}$), because an underlying reason that makes her not like dark suspenseful movies perhaps vanishes if Tom Cruise is in the movie. For a model to capture such a pattern, it has to allow some sort of <strong>nonlinear cross feature interactions</strong> between features $p$ and $q$.</p></li>
+
+<li><p>However, the gain in the addition of cross feature terms over the linear terms on the MAE Rate is a mere $1.5\%$:
 $$\hat{R} = R_{lin} + R_{xft}$$
-$$=&gt; Nonlinear\ Cross\ Feature\ Model: MAE (CV) = 0.615$$</p></li>
+$$=&gt; Nonlinear\ Cross\ Feature\ Model: MAE (CV) = 0.612$$</p></li>
 
-<li><p>My intuition is that cross features must play a crucial role in explaining the rating patterns in the user population. Yet, we&rsquo;re only adding $3 k^2$ more tunable variables that are aimed to capture this nonlinear pattern for the whole system of users and movies. On the other hand, the feature matrices $U$ and $V$ carry $(m+n)*k = 1,657,710$ independent tunable variables for the whole training set. For a typical value of $k=10$, the linear feature terms have approximately 850,000 more tunable variables than the cross feature terms.</p></li>
+<li><p>The computational price paid for a mere $2\%$ improvement in MAE Rate is that the runtime increased from $25\ sec/epoch$ to $38\ sec/epoch$ when incorporating the cross feature interaction  ($U_{ip}$ ~ $V_{jq}$).</p></li>
 
-<li><p>The computational price paid for a mere $1.5\%$ increase in MAE Rate is that the runtime increased from $30\ sec/epoch$ for the pure linear model to $60\ sec/epoch$ when incorporating all 3 types of nonlinear feature crossings:
-<p align="center">($U_{ip}$ ~ $V_{jq}$),&nbsp; ($U_{ip}$ ~ $U_{iq}$),&nbsp; ($V_{jp}$ ~ $V_{jq}$)</p></p></li>
+<li><blockquote>
+<p>I also experimented on adding two more cross feature terms as follows:  $(X_{UU})_{pq}\ U_{ip} U_{jq} + (X_{VV})_{pq}\ V_{ip}  V_{jq}$. Not surprisingly, this didn&rsquo;t produce any improvement in the final MAE Rate only caused a tiny bit of overfitting. The cross feature interaction between $U_p$&mdash;$U_q$ and $V_p$&mdash;$V_q$ can be learned by increasing $k$, as well.
+</p>
+</blockquote></li>
+
+<li><blockquote>
+<p>I also experimented on implementing a $k \times k$ separate cross feature tensor of size for each user. This produces a 3-dimensional tensor $X_{UV}$ of size $m \times k \times k=$ 13,849,300 new tunable parameters instead of only $k \times k$ which is a mere 100.</p>
+</blockquote></li>
 </ul>
-
-<p><strong>Note to self</strong>: I have to try<br />
-1. Incorporating only the $X_{UV}$ term and removing $X_{UU}$ and $X_{VV}$ terms.  To test the importance of the 3 separate cross feature terms.<br />
-2. Then learning an $X_{UV}$ term (13,849,300 new tunable parameters) for each user separately.
-<br />
-A better model that&rsquo;s aimed to capture the cross feature interactions for each user independently could incorporate a separate $X_{UV}$ tensor for each user. This would introduce $mk^2$ ($\approx$ 13,849,300) more tunable variables and might quickly become impractical, however, would be a curious undertaking to try on <code>tensorflow</code>.</p>
 
 <hr />
 
@@ -307,7 +304,7 @@ A better model that&rsquo;s aimed to capture the cross feature interactions for 
 <p>In essence, we are imposing a penalty for any behavior that diverges from the average pattern.  In this spirit, I formulated the $L_2$ regularization term as follows:</p>
 
 <p>$$\Omega_{lin} = \sum_{i=1}^m\ \Big(U_i - \mu_{U_i} \Big)^2 +\sum_{j=1}^n\ \Big(V_j - \mu_{V_j}\ \Big)^2$$
-$$\Omega_{xft} = \sum_{p=1}^k \sum_{q=1}^k\ (X_{UV})_{pq} + \sum_{p=1}^k \sum_{q=1}^k\ (X_{UU})_{pq} + \sum_{p=1}^k \sum_{q=1}^k\ (X_{VV})_{pq}$$</p>
+$$\Omega_{xft} = \sum_{p=1}^k \sum_{q=1}^k\ (X_{UV})_{pq}$$</p>
 
 <p>where,<br />
 $\Omega_{linear}$: regularization term for linear features<br />
@@ -317,9 +314,7 @@ $\mu_{V_j}$: mean rating for movie-$j$</p>
 
 <pre><code class="language-python">reg = (tf.reduce_sum((stacked_U - stacked_u_mean)**2) + 
        tf.reduce_sum((stacked_V - stacked_v_mean)**2) + 
-       tf.reduce_sum((UV_xft**2)) + 
-       tf.reduce_sum((UU_xft**2)) + 
-       tf.reduce_sum((VV_xft**2))) / (BATCH_SIZE*k)
+       tf.reduce_sum(X_UV**2)) / (BATCH_SIZE*k)
 </code></pre>
 
 <p>However, regularization didn&rsquo;t improve the MAE Rate because of the over abundance of data which is already the best implicit regularizer than any other explicitly imposed regularization term.</p>
@@ -341,8 +336,9 @@ v_mean = tf.placeholder(dtype=tf.float32, shape=(BATCH_SIZE,1))
 </code></pre>
 
 <ul>
-<li>At each SGD step a mini-batch of ratings $R_{ij}$ and the corresponding user-movie index pairs $(i,j)$ are fed into the computational graph. For this, we have to stack the corresponding embedding vectors into 2-D tensors <code>U_stack</code> and <code>V_stack</code> where both <code>U_stack.getshape()</code> and <code>V_stack.getshape()</code> equal to <code>(BATCH_SIZE,k)</code>.<br />
-The implementation of stacking tensors  on<code>tensorflow</code> is a little trickier than it would be in <code>numpy</code>:</li>
+<li>At each SGD step a mini-batch of ratings $R_{ij}$ and the corresponding user-movie index pairs $(i,j)$ are fed into the computational graph. In order to achieve this, we have to stack the corresponding embedding vectors into 2-D tensors <code>U_stack</code> and <code>V_stack</code> where both <code>U_stack.getshape()</code> and <code>V_stack.getshape()</code> equal to <code>(BATCH_SIZE,k)</code>.<br />
+<br />
+The implementation of stacking tensors  on<code>tensorflow</code> is a little trickier than in <code>numpy</code>:</li>
 </ul>
 
 <pre><code class="language-python">def get_stacked_UV(R_indices, R, U, V, k, BATCH_SIZE):
