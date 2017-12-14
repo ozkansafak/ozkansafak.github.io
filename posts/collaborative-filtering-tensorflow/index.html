@@ -65,11 +65,11 @@
 
 <h2 id="1-problem-description">1. Problem Description</h2>
 
-<p>We are given a rating matrix $R$ where only a small fraction of the entries are provided; otherwise the rest is missing. The task of a Recommender Model is to predict those missing entries. As in most Machine Learning problems the assumption here is that there&rsquo;s an underlying pattern of how users rate movies.</p>
+<p>We are given a rating matrix $R$ where only a small fraction of the entries are provided; otherwise the rest of them are missing. The task of a Recommender System is to predict those missing entries. As in most Machine Learning problems the assumption here is that there&rsquo;s an underlying pattern of how users rate movies.</p>
 
-<p>By the nature of the problem, $R$ is a sparse matrix, where the sparsity comes not from zero entries but from empty records. Therefor, we represent the training data in 3 columns: $i$: user ID , $j$: movie ID and $R_{ij}$: the rating (see Table 1).</p>
+<p>By the nature of the problem, $R$ is a sparse matrix, where the sparsity comes not from zero entries but from empty records. Therefor, we represent the data in the rating matrix $R$ in 3 columns: $i$: user ID , $j$: movie ID and $R_{ij}$: the rating (see Table 1).</p>
 
-<p><font size="+1"><strong><p align="center">Table 1. Ratings data ml-20m sparse format</p></strong></font></p>
+<p><font size="+1"><strong><p align="center">Table 1. A conceptual sketch of the Ratings in ml-20m data in sparse format </p></strong></font></p>
 
 <table>
 <thead>
@@ -177,7 +177,7 @@
 <li>$16\%$ &ndash; cross validation data,</li>
 <li>$20\%$ &ndash; test data.</li>
 </ul></li>
-<li>We abstain from imposing an explicit <strong>bias term</strong> in the feature vectors $U$ and $V$. In the matrix factorization scheme, the embeddings are free to learn biases if necessary.</li>
+<li>We abstain from imposing an explicit <strong>bias term</strong> in the feature vectors $U$ and $V$. In the Matrix Factorization scheme, the embeddings are free to learn biases if necessary.</li>
 <li>Since no particular bounds are imposed on the entries in the feature vectors $U$ and $V$, the model is free to learn positive or negative real numbers as feature coefficients.<br /></li>
 </ul>
 
@@ -203,7 +203,7 @@
 
 <h2 id="3-matrix-factorization-model">3. Matrix Factorization Model</h2>
 
-<p>The terms  <em>Matrix Factorization</em>, <em>Collaborative Filtering</em>, and <em>Low-Rank Matrix Factorization</em> all refer to the same recommender system model.  In essence, this model is based on the assumption that users who liked the same movies are likely to feel similarly towards other movies.  The term <em>collaborative</em> refers to the observation that when a large set of users are involved in rating the movies, these users effectively collaborate to help the model to  better predict the movie ratings for everyone because every new rating will help the algorithm learn better features for the complete user-movie system.</p>
+<p>The terms  <em>Matrix Factorization</em>, <em>Low-Rank Matrix Factorization</em> and <em>Collaborative Filtering</em>  all refer to the same recommender system model in the context of the current problem.  In essence, this model is based on the assumption that users who liked the same movies are likely to feel similarly towards other movies.  The term <em>collaborative</em> refers to the observation that when a large set of users are involved in rating the movies, these users effectively collaborate to help the model  better predict the movie ratings for everyone because every new rating will help the algorithm learn better features for the complete user-movie system.</p>
 
 <p>The Collaborative Filtering Model can also be described as reconstructing a <strong>low rank approximation</strong> of matrix $R$ via its <strong>Singular Value Decomposition</strong> $R = U \cdot \Sigma \cdot V^T$. The low-rank reconstruction is achieved by only retaining the largest $k$ singular values, $R_k = U \cdot \Sigma_k \cdot V^T$.</p>
 
@@ -362,6 +362,16 @@ The implementation of stacking tensors  on<code>tensorflow</code> is a little tr
 
 <ul>
 <li>The feature vectors $U$ and $V$ are initialized by sampling from a Gaussian Distribution with mean $\mu = \sqrt{ 3.5/k}$, and standard deviation $\sigma = 0.2$. For the cross feature vectors $X_{UV}$, $X_{UV}$ and $X_{VV}$, the mean was chosen by practical experiments to be $\mu=-1/k$ and standard deviation $\sigma = 0.2$ as in the linear feature vectors.</li>
+</ul>
+
+<hr />
+
+<h2 id="github-repo">Github Repo:</h2>
+
+<ul>
+<li>Here&rsquo;s the link to codebase for Matrix Factorization on <code>tensorflow</code>
+<br />
+<a href="https://github.com/ozkansafak/Fellowship.AI-RecommenderSystem">https://github.com/ozkansafak/Fellowship.AI-RecommenderSystem</a></li>
 </ul>
 
 <hr />
