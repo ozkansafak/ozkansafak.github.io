@@ -6,19 +6,10 @@
     <description>Recent content on Theory of Machines</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 21 Dec 2017 11:10:18 -0800</lastBuildDate>
+    <lastBuildDate>Tue, 28 Nov 2017 12:25:25 -0800</lastBuildDate>
     
 	<atom:link href="https://ozkansafak.github.io/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>Binary Classification With Matrix Factorization</title>
-      <link>https://ozkansafak.github.io/posts/binary-classification-with-matrix-factorization/</link>
-      <pubDate>Thu, 21 Dec 2017 11:10:18 -0800</pubDate>
-      
-      <guid>https://ozkansafak.github.io/posts/binary-classification-with-matrix-factorization/</guid>
-      <description></description>
-    </item>
     
     <item>
       <title>Semi-supervised Learning</title>
